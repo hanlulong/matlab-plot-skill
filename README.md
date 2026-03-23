@@ -1,8 +1,29 @@
-# MATLAB Plot Skill
+# Publication-Quality MATLAB Figures
 
-`matlab-plot-skill` is a reusable skill for Codex and Claude Code that helps agents produce publication-quality MATLAB figures.
+[![Validate](https://github.com/hanlulong/matlab-plot-skill/actions/workflows/validate.yml/badge.svg)](https://github.com/hanlulong/matlab-plot-skill/actions/workflows/validate.yml)
 
-The key rule is simple: the agent must not stop after writing plotting code. It must generate the figure, export it, read the rendered figure itself, and iterate until the visual result is professional.
+`matlab-plot-skill` is a reusable skill for Codex and Claude Code that fixes messy MATLAB figures: cramped layouts, unreadable titles, awkward legends, bad white space, and weak PDF output for LaTeX or Overleaf.
+
+The key rule is simple: the agent must not stop after writing plotting code. It must generate the figure, export it, read the rendered figure itself, and iterate until the visual result is no longer a mess.
+
+![Demo figure](./examples/output/demo_publication_figure.png)
+
+## Find This Repo If You Searched For
+
+- how to make MATLAB figures look professional
+- publication-quality MATLAB plots
+- fix messy subplot layout in MATLAB
+- export MATLAB figure to PDF for LaTeX
+- MATLAB figures for Overleaf
+- improve MATLAB legend, title, spacing, and white space
+
+## What Problem This Solves
+
+- multi-panel MATLAB figures that look cramped or amateurish
+- legends that steal too much plot area
+- titles that are too long or too small after PDF scaling
+- inconsistent colors and symbols across panels
+- plots that look acceptable in MATLAB but bad once embedded in a paper
 
 ## What This Skill Enforces
 
@@ -11,6 +32,7 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 - better layout choices for multi-panel figures
 - explicit render-review-iterate behavior
 - reusable MATLAB export helper code
+- a quick PNG review path so the agent can read the rendered figure easily
 
 ## Repository Layout
 
@@ -20,6 +42,8 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 - [`matlab-plot-skill/references/matlab_figure_guidelines.md`](./matlab-plot-skill/references/matlab_figure_guidelines.md)
 - [`install.ps1`](./install.ps1)
 - [`install.sh`](./install.sh)
+- [`examples/demo_publication_figure.m`](./examples/demo_publication_figure.m)
+- [`tools/validate_repo.py`](./tools/validate_repo.py)
 
 ## Install
 
@@ -74,7 +98,39 @@ Use $matlab-plot-skill to refactor Plots/generate_my_figure.m into a publication
 Use $matlab-plot-skill to improve this MATLAB appendix figure. Keep the color mapping fixed across panels, distinguish variants with markers, export a vector PDF, and read the generated figure yourself before stopping.
 ```
 
+## Demo Example
+
+Run:
+
+```powershell
+matlab -batch "run('examples/demo_publication_figure.m')"
+```
+
+This generates:
+
+- `examples/output/demo_publication_figure.pdf`
+- `examples/output/demo_publication_figure.png`
+
+The PNG is there for fast review. The PDF is the publication-style export for the paper workflow.
+
+## Validation
+
+Run the repo validation locally:
+
+```powershell
+uv run --with pyyaml python tools\validate_repo.py .
+```
+
+This checks:
+
+- required skill packaging files
+- `SKILL.md` front matter and workflow language
+- `openai.yaml` skill metadata
+- PowerShell install flow
+- bash install flow when bash is available
+
 ## Notes
 
 - Codex reads [`agents/openai.yaml`](./matlab-plot-skill/agents/openai.yaml) for optional UI metadata.
 - Claude Code can use the same `SKILL.md`-based folder structure.
+- The repo includes GitHub Actions validation at [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).

@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: "Publication-Quality MATLAB Figures"
+message: "If this skill helps your workflow or research outputs, please cite the repository."
+type: software
+authors:
+  - family-names: "Han"
+    given-names: "Lu"
+    email: "hanlulong@gmail.com"
+repository-code: "https://github.com/hanlulong/matlab-plot-skill"
+license: "MIT"
+date-released: "2026-03-23"

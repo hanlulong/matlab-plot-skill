@@ -1,13 +1,13 @@
 ---
 name: matlab-plot-skill
-description: Use this skill when creating or improving MATLAB figures for papers, slides, notes, or appendices and the output needs to be publication-quality. It is especially appropriate for multi-panel figures, LaTeX/Overleaf workflows, vector PDF export, and any task where the agent must inspect the rendered figure and iterate on spacing, typography, legends, and page fit.
+description: "Use this skill when MATLAB figures are messy: cramped subplots, unreadable titles, awkward legends, bad page fit, or broken PDF output for LaTeX or Overleaf. It is for turning rough MATLAB plots into publication-quality figures by exporting the figure, reading the rendered figure, and then iterate on the layout until it looks clean."
 ---
 
 # MATLAB Plot Skill
 
 ## Overview
 
-Use this skill to turn rough MATLAB plots into publication-quality figures. The default workflow is: read the plotting code and destination document, generate or refactor the MATLAB figure, export a vector PDF, read the rendered figure yourself, critique it, and iterate until the result is clearly professional.
+Use this skill to fix messy MATLAB figures and turn rough plots into publication-quality output. The default workflow is: read the plotting code and destination document, generate or refactor the MATLAB figure, export a vector PDF, read the rendered figure yourself, critique it, and iterate until the result is clearly professional.
 
 ## When To Use It
 
@@ -16,6 +16,7 @@ Use this skill to turn rough MATLAB plots into publication-quality figures. The 
 - Multi-panel paper figures where spacing, legends, titles, and page fit matter.
 - Overleaf or LaTeX workflows that need vector PDF output.
 - Requests using phrases like `publication-quality`, `professional`, `journal-ready`, `clean up this figure`, or `make this plot readable`.
+- Requests that effectively mean `this MATLAB figure looks messy`.
 
 ## Non-Negotiable Review Loop
 
@@ -50,6 +51,7 @@ If you cannot read the rendered figure, say so explicitly and state what remains
 ### 3. Apply MATLAB Plotting Standards
 
 - Start from [`scripts/export_publication_figure.m`](./scripts/export_publication_figure.m) when the figure needs a clean export path.
+- Use the helper's optional PNG preview export when a quick visual review image will speed up iteration.
 - Set the figure size explicitly in inches rather than relying on defaults.
 - Use vector PDF for LaTeX unless the destination explicitly needs a raster format.
 - Keep line widths, marker sizes, and fonts readable after the figure is scaled down on the page.

@@ -3,11 +3,12 @@ function export_publication_figure(fig, outputPath, opts)
 %   export_publication_figure(gcf, "Plots/my_figure.pdf")
 %
 %   This helper is meant to be copied or adapted into project code. It applies
-%   explicit sizing, readable defaults, and vector export. The agent still
-%   needs to read the generated figure and iterate on the layout afterward.
+%   explicit sizing, readable defaults, vector export, and an optional PNG
+%   preview path for fast visual review. The agent still needs to read the
+%   generated figure and iterate on the layout afterward.
 
 arguments
-    fig (1,1) matlab.ui.Figure = gcf
+    fig (1,1) matlab.ui.Figure
     outputPath {mustBeTextScalar}
     opts.WidthInches (1,1) double {mustBePositive} = 7.0
     opts.HeightInches (1,1) double {mustBePositive} = 5.25
@@ -22,6 +23,8 @@ arguments
     opts.BackgroundColor = "white"
     opts.LayoutPadding {mustBeTextScalar} = "compact"
     opts.TileSpacing {mustBeTextScalar} = "compact"
+    opts.PreviewPath {mustBeTextScalar} = ""
+    opts.PreviewResolution (1,1) double {mustBePositive} = 220
 end
 
 set(fig, ...
@@ -55,6 +58,12 @@ drawnow;
 exportgraphics(fig, outputPath, ...
     'ContentType', opts.ContentType, ...
     'BackgroundColor', opts.BackgroundColor);
+
+if strlength(opts.PreviewPath) > 0
+    exportgraphics(fig, opts.PreviewPath, ...
+        'Resolution', opts.PreviewResolution, ...
+        'BackgroundColor', opts.BackgroundColor);
+end
 end
 
 function style_axes(ax, opts)

@@ -29,6 +29,14 @@ Set the renderer explicitly when helpful:
 set(gcf, 'Renderer', 'painters');
 ```
 
+Always inspect the exported PDF. Even when `exportgraphics(..., 'ContentType', 'vector')` is the right default, some MATLAB versions or graphics objects can still produce artifacts or awkward text handling.
+
+If figure-level PDF export looks wrong:
+
+- try exporting the `tiledlayout` or `axes` handle directly,
+- inspect the standalone PDF and the final LaTeX page,
+- generate a PNG review export so you can read the figure quickly during iteration.
+
 ## Layout Rules
 
 - `TileSpacing='compact'` and `Padding='compact'` are good starting points, not mandatory end states.
