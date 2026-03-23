@@ -1,0 +1,7 @@
+interface:
+  display_name: "MATLAB Plot Skill"
+  short_description: "Make professional MATLAB figures with render-review iteration."
+  default_prompt: "Use $matlab-plot-skill to create or improve a MATLAB figure, export a vector PDF, read the rendered figure, and iterate until it looks publication-quality."
+
+policy:
+  allow_implicit_invocation: true
