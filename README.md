@@ -1,7 +1,5 @@
 # Publication-Quality MATLAB Figures
 
-[![Validate](https://github.com/hanlulong/matlab-plot-skill/actions/workflows/validate.yml/badge.svg)](https://github.com/hanlulong/matlab-plot-skill/actions/workflows/validate.yml)
-
 `matlab-plot-skill` is a reusable skill for Codex and Claude Code that fixes messy MATLAB figures: cramped layouts, unreadable titles, awkward legends, bad white space, and weak PDF output for LaTeX or Overleaf.
 
 The key rule is simple: the agent must not stop after writing plotting code. It must generate the figure, export it, read the rendered figure itself, and iterate until the visual result is no longer a mess.
@@ -133,4 +131,3 @@ This checks:
 
 - Codex reads [`agents/openai.yaml`](./matlab-plot-skill/agents/openai.yaml) for optional UI metadata.
 - Claude Code can use the same `SKILL.md`-based folder structure.
-- The repo includes GitHub Actions validation at [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
