@@ -96,7 +96,7 @@ Install only into Claude Code:
 
 Copy the [`matlab-plot-skill`](./matlab-plot-skill) folder into one or both of these locations:
 
-- Codex: `~/.codex/skills/matlab-plot-skill`
+- Codex: `~/.agents/skills/matlab-plot-skill` (Codex releases before 2026 used `~/.codex/skills`)
 - Claude Code: `~/.claude/skills/matlab-plot-skill`
 
 ## Example Invocation

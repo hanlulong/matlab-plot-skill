@@ -3,7 +3,7 @@ set -euo pipefail
 
 target="both"
 force="false"
-codex_skills_path="${HOME}/.codex/skills"
+codex_skills_path="${HOME}/.agents/skills"
 claude_skills_path="${HOME}/.claude/skills"
 
 require_value() {

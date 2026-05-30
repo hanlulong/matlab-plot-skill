@@ -1,7 +1,7 @@
 param(
     [ValidateSet('codex', 'claude', 'both')]
     [string]$Target = 'both',
-    [string]$CodexSkillsPath = (Join-Path $HOME '.codex\skills'),
+    [string]$CodexSkillsPath = (Join-Path $HOME '.agents\skills'),
     [string]$ClaudeSkillsPath = (Join-Path $HOME '.claude\skills'),
     [switch]$Force
 )
