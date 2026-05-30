@@ -8,4 +8,5 @@ authors:
     email: "hanlulong@gmail.com"
 repository-code: "https://github.com/hanlulong/matlab-plot-skill"
 license: "MIT"
-date-released: "2026-03-23"
+version: "0.1.0"
+date-released: "2026-05-30"

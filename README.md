@@ -38,12 +38,27 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 - [`matlab-plot-skill/scripts/export_publication_figure.m`](./matlab-plot-skill/scripts/export_publication_figure.m)
 - [`matlab-plot-skill/references/render_review_checklist.md`](./matlab-plot-skill/references/render_review_checklist.md)
 - [`matlab-plot-skill/references/matlab_figure_guidelines.md`](./matlab-plot-skill/references/matlab_figure_guidelines.md)
+- [`matlab-plot-skill/agents/openai.yaml`](./matlab-plot-skill/agents/openai.yaml) (Codex UI metadata)
 - [`install.ps1`](./install.ps1)
 - [`install.sh`](./install.sh)
 - [`examples/demo_publication_figure.m`](./examples/demo_publication_figure.m)
+- [`examples/output/demo_publication_figure.png`](./examples/output/demo_publication_figure.png) (committed preview image)
 - [`tools/validate_repo.py`](./tools/validate_repo.py)
+- [`LICENSE`](./LICENSE), [`CITATION.cff`](./CITATION.cff)
+
+## Prerequisites
+
+- MATLAB R2021a or newer. The export helper uses `exportgraphics` (R2020a+) and an `arguments` block (R2019b+); the demo and the documented helper calls use name=value argument syntax (`WidthInches=8.4`), which requires R2021a+.
+- For repo validation only: `uv` (or Python 3 with `pyyaml`).
 
 ## Install
+
+Clone the repo first (the installers run from the clone):
+
+```bash
+git clone https://github.com/hanlulong/matlab-plot-skill.git
+cd matlab-plot-skill
+```
 
 ### Windows PowerShell
 
@@ -98,9 +113,9 @@ Use $matlab-plot-skill to improve this MATLAB appendix figure. Keep the color ma
 
 ## Demo Example
 
-Run:
+Run this from the repository root (the path is relative to MATLAB's working directory):
 
-```powershell
+```bash
 matlab -batch "run('examples/demo_publication_figure.m')"
 ```
 
@@ -109,25 +124,37 @@ This generates:
 - `examples/output/demo_publication_figure.pdf`
 - `examples/output/demo_publication_figure.png`
 
-The PNG is there for fast review. The PDF is the publication-style export for the paper workflow.
+The PNG is there for fast review. The PDF is the publication-style export for the paper workflow. Only the PNG (used as the preview above) is committed; the vector PDF is git-ignored and produced locally when you run the demo.
 
 ## Validation
 
-Run the repo validation locally:
+`tools/validate_repo.py` is an optional local check (it is not run by CI). Run it before contributing:
 
-```powershell
-uv run --with pyyaml python tools\validate_repo.py .
+```bash
+uv run --with pyyaml python tools/validate_repo.py .
 ```
+
+(Or `pip install -r requirements-dev.txt` first, then `python tools/validate_repo.py .`.)
 
 This checks:
 
-- required skill packaging files
-- `SKILL.md` front matter and workflow language
+- required skill packaging files, including the committed demo PNG
+- `SKILL.md` front matter and that the body still expresses the render-review-iterate workflow
+- the export helper still uses `exportgraphics` vector output, and the demo still calls that helper
+- relative markdown links resolve
 - `openai.yaml` skill metadata
-- PowerShell install flow
-- bash install flow when bash is available
+- PowerShell install flow (when PowerShell is available)
+- bash install flow (when bash is available)
+
+## Making Changes
+
+1. If you change the MATLAB code, lint it locally: `matlab -batch "checkcode('matlab-plot-skill/scripts/export_publication_figure.m')"` (and the demo).
+2. If you change the demo, re-run it with MATLAB and re-commit `examples/output/demo_publication_figure.png` (the committed preview image).
+3. Run the validator above before committing.
 
 ## Notes
 
 - Codex reads [`agents/openai.yaml`](./matlab-plot-skill/agents/openai.yaml) for optional UI metadata.
 - Claude Code can use the same `SKILL.md`-based folder structure.
+- The installer copies the skill, so re-run it with `--force` (`-Force` on PowerShell) after you update the repo to refresh the installed copy.
+- Restart your Claude Code or Codex session after installing so the new skill is picked up.

@@ -1,6 +1,6 @@
 # Render Review Checklist
 
-Use this checklist after exporting the figure. Read the actual PDF or rendered destination page before deciding the work is finished.
+Use this checklist after exporting the figure. Read the actual rendered figure before deciding the work is finished — read the PNG preview, since a vector PDF cannot be inspected visually as an image.
 
 ## Always Check
 
@@ -22,6 +22,11 @@ Use this checklist after exporting the figure. Read the actual PDF or rendered d
 - Are axis limits and tick conventions consistent when they should be?
 - Is color meaning stable across all panels?
 - Are markers or line styles doing the secondary differentiation work?
+
+## PDF Internals
+
+- Select text in the PDF to confirm it is vector text with embedded fonts, not a rasterized image.
+- Check that minus signs and negative numbers render (MATLAB's Unicode minus can drop in some viewers or LaTeX fonts).
 
 ## Embedded Figure Checks
 

@@ -6,9 +6,18 @@ force="false"
 codex_skills_path="${HOME}/.codex/skills"
 claude_skills_path="${HOME}/.claude/skills"
 
+require_value() {
+  # $1 is the flag name; the caller passes "$@" so $# reflects remaining args.
+  if [[ $# -lt 2 ]]; then
+    echo "Missing value for $1" >&2
+    exit 1
+  fi
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --target)
+      require_value "$@"
       target="$2"
       shift 2
       ;;
@@ -17,10 +26,12 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --codex-path)
+      require_value "$@"
       codex_skills_path="$2"
       shift 2
       ;;
     --claude-path)
+      require_value "$@"
       claude_skills_path="$2"
       shift 2
       ;;
@@ -74,3 +85,5 @@ case "${target}" in
     exit 1
     ;;
 esac
+
+echo "Restart your Claude Code / Codex session to load the skill."

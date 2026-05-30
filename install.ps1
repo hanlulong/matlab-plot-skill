@@ -41,3 +41,5 @@ switch ($Target) {
         Install-Skill -DestinationRoot $ClaudeSkillsPath
     }
 }
+
+Write-Host "Restart your Claude Code / Codex session to load the skill."
