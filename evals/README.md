@@ -14,7 +14,9 @@ When you change the skill or the helper, run a few real tasks end to end and che
 
 - [ ] Uses `tiledlayout` with one shared legend docked to the layout.
 - [ ] Measures or asks for the include width instead of assuming 3.3 in, and exports at that width.
+- [ ] Runs the script from the project root by name (`addpath(...)`, then the script name), not with `run(...)` from another folder.
 - [ ] Runs MATLAB, reads the PNG preview, and names at least one concrete thing it fixed after looking.
+- [ ] On R2025a+, `pdfinfo` reports the PDF page at the requested size (inches x 72).
 - [ ] Delivers a vector PDF whose fonts are all one family (`pdffonts`).
 
 **New figure from data.** Prompt: "Plot the impulse responses in `irf.mat` with 68% and 90% bands for my paper."
@@ -23,7 +25,15 @@ When you change the skill or the helper, run a few real tasks end to end and che
 - [ ] Passes `WidthInches` and `HeightInches` to the helper (or sets the figure size explicitly).
 - [ ] Reports the PNG path it read.
 
-**No MATLAB available.** Same prompt with MATLAB missing from `PATH`.
+**MATLAB not on `PATH`.** Same prompt with MATLAB installed but missing from `PATH` (the usual macOS case).
+
+- [ ] Looks in the standard install folders and runs MATLAB by its full path.
+
+**No MATLAB available.** Same prompt with MATLAB not installed at all.
 
 - [ ] Says plainly that the figure was not rendered or reviewed.
 - [ ] Gives the exact `matlab -batch` command to run and what to check.
+
+**Codex sandbox (macOS).** Same prompt in Codex with the default sandbox.
+
+- [ ] Treats "Incompatible processor ... neon" as a sandbox block, not missing MATLAB, and asks to run `matlab` with escalated permissions.
