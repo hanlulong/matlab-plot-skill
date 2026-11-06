@@ -6,61 +6,67 @@ end
 rng(42);
 x = linspace(0, 1, 11);
 
-y1 = 0.8 + 0.35 * sin(2 * pi * x) + 0.15 * x;
-y2 = 0.5 + 0.25 * cos(2 * pi * x + 0.4) + 0.25 * x .^ 1.4;
-y3 = 0.3 + 0.4 * x + 0.08 * randn(size(x));
-y4 = 0.2 + 0.55 * x .^ 1.2 - 0.03 * cos(4 * pi * x);
-
-fig = figure('Color', 'white', 'Units', 'inches', 'Position', [1 1 8.4 6.5]);
-outer = tiledlayout(fig, 2, 2, 'TileSpacing', 'loose', 'Padding', 'compact');
+% Two concepts, one color each, in every panel.
+inflationBaseline = 0.8 + 0.35 * sin(2 * pi * x) + 0.15 * x;
+outputBaseline = 0.5 + 0.25 * cos(2 * pi * x + 0.4) + 0.25 * x .^ 1.4;
+inflationAlternative = 0.3 + 0.4 * x + 0.08 * randn(size(x));
+outputAlternative = 0.2 + 0.55 * x .^ 1.2 - 0.03 * cos(4 * pi * x);
 
 colorInflation = [0.000, 0.447, 0.741];
 colorOutput = [0.850, 0.325, 0.098];
 
+% Final printed size: full text width (6.5 in) of a 1-in-margin letter page.
+widthInches = 6.5;
+heightInches = 5.0;
+
+fig = figure('Color', 'white', 'Units', 'inches', ...
+    'Position', [1 1 widthInches heightInches]);
+outer = tiledlayout(fig, 2, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+
 title(outer, 'Professional MATLAB Figure Layout Demo', ...
-    'FontWeight', 'bold', 'FontSize', 13);
+    'FontWeight', 'bold', 'FontSize', 12);
+xlabel(outer, 'Parameter value');
 
 ax1 = nexttile(outer, [1 2]);
-hold(ax1, 'on');
-grid(ax1, 'on');
-plot(ax1, x, y1, '-o', 'Color', colorInflation, ...
-    'MarkerFaceColor', 'white', 'DisplayName', 'Inflation response');
-plot(ax1, x, y2, '--s', 'Color', colorOutput, ...
-    'MarkerFaceColor', 'white', 'DisplayName', 'Output response');
+plot_pair(ax1, x, inflationBaseline, outputBaseline, colorInflation, colorOutput);
 ylabel(ax1, 'Response');
-title(ax1, 'Panel A: Two Cleanly Distinguished Series');
-xlim(ax1, [0, 1]);
+title(ax1, '{\bfA}  Baseline');
 
-leftAx = nexttile(outer);
-hold(leftAx, 'on');
-grid(leftAx, 'on');
-plot(leftAx, x, y3, '-^', 'Color', colorInflation, ...
-    'MarkerFaceColor', 'white', 'DisplayName', 'Policy coefficient A');
-plot(leftAx, x, y4, ':d', 'Color', colorOutput, ...
-    'MarkerFaceColor', 'white', 'DisplayName', 'Policy coefficient B');
-title(leftAx, 'Readable Titles');
-xlabel(leftAx, 'Parameter value');
-ylabel(leftAx, 'Coefficient');
-xlim(leftAx, [0, 1]);
+ax2 = nexttile(outer);
+plot_pair(ax2, x, inflationAlternative, outputAlternative, colorInflation, colorOutput);
+ylabel(ax2, 'Response');
+title(ax2, '{\bfB}  Alternative specification');
 
-rightAx = nexttile(outer);
-hold(rightAx, 'on');
-grid(rightAx, 'on');
-plot(rightAx, x, y1 - y2 + 0.55, '-o', 'Color', colorInflation, ...
-    'MarkerFaceColor', 'white', 'DisplayName', 'Layout quality');
-plot(rightAx, x, y4, '--d', 'Color', colorOutput, ...
-    'MarkerFaceColor', 'white', 'DisplayName', 'Readability quality');
-title(rightAx, 'Balanced White Space');
-ylabel(rightAx, 'Score');
-xlabel(rightAx, 'Parameter value');
-xlim(rightAx, [0, 1]);
+ax3 = nexttile(outer);
+plot_pair(ax3, x, inflationBaseline - inflationAlternative, ...
+    outputBaseline - outputAlternative, colorInflation, colorOutput);
+yline(ax3, 0, ':', 'Color', [0.4 0.4 0.4], 'HandleVisibility', 'off');
+ylabel(ax3, 'Difference');
+title(ax3, '{\bfC}  Baseline minus alternative');
 
-legend(ax1, 'Location', 'southoutside', 'Orientation', 'horizontal', 'NumColumns', 2, 'Box', 'off');
+linkaxes([ax1, ax2], 'y');
+
+% One shared legend docked above all tiles (the shared x label sits below);
+% colors mean the same in every panel.
+lgd = legend(ax1, 'Orientation', 'horizontal');
+lgd.Layout.Tile = 'north';
 
 addpath(fullfile(fileparts(mfilename('fullpath')), '..', 'matlab-plot-skill', 'scripts'));
 
 export_publication_figure(fig, fullfile(outputDir, 'demo_publication_figure.pdf'), ...
-    WidthInches=8.4, HeightInches=6.5, LayoutPadding="compact", TileSpacing="compact", ...
+    WidthInches=widthInches, HeightInches=heightInches, ...
     PreviewPath=fullfile(outputDir, 'demo_publication_figure.png'));
 
 close(fig);
+
+function plot_pair(ax, x, inflation, output, colorInflation, colorOutput)
+% Inflation is always blue circles and output always orange squares.
+hold(ax, 'on');
+grid(ax, 'on');
+plot(ax, x, inflation, '-o', 'Color', colorInflation, ...
+    'MarkerFaceColor', 'white', 'DisplayName', 'Inflation');
+plot(ax, x, output, '--s', 'Color', colorOutput, ...
+    'MarkerFaceColor', 'white', 'DisplayName', 'Output');
+xlim(ax, [0, 1]);
+xticks(ax, 0:0.25:1);
+end
