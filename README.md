@@ -60,7 +60,7 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
   ```
 
   The skill also tells the agent to look in the usual install folders before it concludes that MATLAB is missing.
-- In Codex, MATLAB has to run outside the sandbox: on macOS it cannot start inside it (on Apple Silicon it exits with "Incompatible processor ... neon"). The skill tells Codex to ask for escalated permissions for the `matlab` command; approve that request when it appears.
+- In Codex on macOS, MATLAB has to run outside the sandbox: it cannot start inside it (on Apple Silicon it exits with "Incompatible processor ... neon"). The skill tells Codex to ask for escalated permissions for the `matlab` command; approve that request when it appears. A launch the sandbox blocked can leave a `matlab_crash_dump.*` file in your home folder, which you can delete.
 - Optional: `pdftoppm` (Poppler) or ImageMagick, so the agent can rasterize a PDF it needs to read.
 - For repo validation only: `uv` (or Python 3 with `pyyaml`).
 
@@ -248,4 +248,4 @@ matlab -batch "assertSuccess(runtests('tests'))"
 - Claude Code can use the same `SKILL.md`-based folder structure.
 - The installer copies the skill, so re-run it with `--force` (`-Force` on PowerShell) after you update the repo to refresh the installed copy.
 - Claude Code picks up new and changed skills in `~/.claude/skills` without a restart. If `~/.claude/skills` did not exist when your session started, run `/reload-skills` to load the skill, and again after each later change there, until you start a new session. Codex detects newly installed skills automatically; restart Codex if the skill does not appear.
-- See [`CHANGELOG.md`](./CHANGELOG.md) for what changed in each version. Version 0.2.0 changed the helper's defaults: it now keeps your figure size and layout spacing unless you pass `WidthInches`/`HeightInches` or `TileSpacing`/`LayoutPadding`. A script that passes only `WidthInches` to a plain `figure` now keeps MATLAB's default height (about 6 in under `matlab -batch`) instead of 4 in; the helper warns (`export_publication_figure:defaultSize`), and passing `HeightInches=4` restores the 0.1.0 output.
+- See [`CHANGELOG.md`](./CHANGELOG.md) for what changed in each version. Version 0.2.0 changed the helper's defaults: it now keeps your figure size and layout spacing unless you pass `WidthInches`/`HeightInches` or `TileSpacing`/`LayoutPadding`. A script that passes only `WidthInches` to a plain `figure` now keeps MATLAB's default height instead of 4 in (about 6 in under `matlab -batch` on R2026a/macOS; it varies by platform and release, and the warning prints the actual size). The helper warns (`export_publication_figure:defaultSize`), and passing `HeightInches=4` restores the 0.1.0 figure size. On R2025a+ the PDF is now exactly that size rather than a tight crop.

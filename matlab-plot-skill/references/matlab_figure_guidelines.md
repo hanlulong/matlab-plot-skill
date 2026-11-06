@@ -62,7 +62,7 @@ exportgraphics(fig, 'fig.pdf', 'ContentType', 'vector', ...
     'Width', 3.49, 'Height', 2.6, 'Units', 'inches');
 ```
 
-The page is then exactly that size and text prints within about 1% of its point size. The helper does this on R2025a+. It also avoids a problem seen on R2026a: a figure resized after it was drawn (for example, re-exported at a slide size after the paper size) can otherwise export at its previous size. On R2021a–R2024b these options do not exist, so include the cropped PDF at its natural size (`\includegraphics{fig.pdf}`) when exact point sizes matter. Check the result with `pdfinfo fig.pdf`: the `Page size` line is in points, so divide by 72 to get inches.
+Use the figure's own size for `Width` and `Height` (`exportgraphics` re-lays the content out into that box, and MathWorks advises a figure of similar size and aspect ratio). The page is then exactly that size and, for a figure built at that size, text prints within about 1% of its point size. The helper does this on R2025a+. It also fixes the page size in a case seen on R2026a: a figure resized after it was drawn (for example, re-exported at a slide size after the paper size) can otherwise export at its previous size. Text in such a re-export can still be 1–3% off its point size (measured on R2026a), so build a fresh figure for each target size when exact point sizes matter. In installed MATLAB R2021a–R2024b these options do not exist (MATLAB Online has them from R2024a), so include the cropped PDF at its natural size (`\includegraphics{fig.pdf}`) when exact point sizes matter. Check the result with `pdfinfo fig.pdf`: the `Page size` line is in points, so divide by 72 to get inches.
 
 ## Style Defaults
 
@@ -127,11 +127,11 @@ If figure-level PDF export looks wrong:
 
 ## Rasterizing Heavy Figures
 
-A vector PDF is the wrong choice for figures with many thousands of primitives (dense scatter, large `pcolor`/`surf`/`contourf`, maps): the file balloons and Overleaf compiles slowly. The symptom is a multi-megabyte PDF or a slow compile. (On R2026a, a 400 x 400 `pcolor` exports to about 2-4 MB, depending on the data, and a 200,000-point `scatter` to about 32 MB.)
+A vector PDF is the wrong choice for figures with many thousands of primitives (dense scatter, large `pcolor`/`surf`/`contourf`, maps): the file balloons and Overleaf compiles slowly. The symptom is a multi-megabyte PDF or a slow compile. (On R2026a, at 6.5 x 4 in, a 400 x 400 `pcolor` exports to about 2–4 MB, depending on the data, and a 200,000-point `scatter` to 15 MB or more.)
 
 `exportgraphics(..., 'ContentType', 'image')` rasterizes **everything** in that export, including tick labels, titles, and legends; the PDF then contains no fonts at all. There is no setting that rasterizes one panel while keeping the rest of the same export vector. In order of preference:
 
-1. Reduce the number of primitives so the vector export stays small and all text stays vector: draw gridded data with `imagesc`/`image` instead of `pcolor` or a flat `surf` (the data is embedded as a bitmap while text stays vector; the same 400 x 400 grid exports to about 25 KB for a smooth surface and about 150 KB for random noise, which compresses poorly), and replace dense scatters with `binscatter`, `histogram2`, or a downsample.
+1. Reduce the number of primitives so the vector export stays small and all text stays vector: draw gridded data with `imagesc`/`image` instead of `pcolor` or a flat `surf` (the data is embedded as a bitmap while text stays vector; the same 400 x 400 grid exports to tens of KB for a smooth surface and a few hundred KB for random noise, which compresses poorly, depending on the figure size), and replace dense scatters with `binscatter`, `histogram2`, or a downsample.
 2. Export the heavy panel on its own as an image (`exportgraphics(ax, 'panel.png', 'Resolution', 300)` or an image-only PDF) and assemble it with the vector panels in LaTeX, for example with `subcaption`.
 3. Export the whole figure with `ContentType='image'` at 300–600 DPI and accept raster text.
 

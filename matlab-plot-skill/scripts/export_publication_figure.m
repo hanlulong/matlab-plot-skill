@@ -21,10 +21,12 @@ function export_publication_figure(fig, outputPath, opts)
 %   Exported size: on R2025a+ the helper passes the figure size to
 %   exportgraphics (Width/Height/Units), so the PDF page and the PNG preview
 %   are exactly that size, the LaTeX include at that width needs no scaling,
-%   and the fonts below print within about 1% of their stated point sizes.
-%   Before R2025a exportgraphics has no Width/Height options and crops the
-%   export to its content, so the PDF comes out about 5-15% smaller than the
-%   figure. Check with: pdfinfo figure.pdf (Page size in pt; divide by 72).
+%   and in a figure built at that size the fonts below print within about 1%
+%   of their stated point sizes (a re-export of a resized figure can be 1-3%
+%   off). Before R2025a (installed MATLAB) exportgraphics has no Width/Height
+%   options and crops the export to its content, so the PDF comes out about
+%   5-15% smaller than the figure. Check with: pdfinfo figure.pdf (Page size
+%   in pt; divide by 72).
 %   See references/matlab_figure_guidelines.md.
 %
 %   Layout spacing: LayoutPadding and TileSpacing are applied to every
@@ -143,8 +145,9 @@ function args = export_size_args(exportSize)
 % exportgraphics crops to the content by default, so without Width/Height the
 % PDF is narrower than the figure. On R2026a a figure resized after it was
 % drawn can also export at its previous size until MATLAB catches up; passing
-% the size explicitly avoids both. Width/Height/Units need R2025a+ (installed
-% MATLAB); older releases keep the cropped export.
+% the size explicitly fixes the page size in both cases (text in a re-export
+% of a resized figure can still be 1-3% off). Width/Height/Units need R2025a+
+% in installed MATLAB; older releases keep the cropped export.
 args = {};
 if ~isMATLABReleaseOlderThan("R2025a")
     args = {'Width', exportSize(1), 'Height', exportSize(2), 'Units', 'inches'};
