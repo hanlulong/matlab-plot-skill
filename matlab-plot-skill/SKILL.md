@@ -64,7 +64,7 @@ export_publication_figure(fig, 'out/figure.pdf', ...
     WidthInches=6.5, HeightInches=4.5, PreviewPath='out/figure.png');
 ```
 
-Then **read `out/figure.png`** and iterate. The helper resizes the figure only to the `WidthInches`/`HeightInches` you pass (otherwise it keeps the current size) and keeps each layout's `TileSpacing`/`Padding` unless you pass `TileSpacing=`/`LayoutPadding=`, so make size and spacing changes there or in the `tiledlayout` call. (If you would rather not depend on the helper, the two `exportgraphics` lines in step 3 do the same export inline.)
+Then **read `out/figure.png`** and iterate. The helper resizes the figure only to the `WidthInches`/`HeightInches` you pass (otherwise it keeps the current size) and keeps each layout's `TileSpacing`/`Padding` unless you pass `TileSpacing=`/`LayoutPadding=`, so make size and spacing changes there or in the `tiledlayout` call. (If you would rather not depend on the helper, set the size yourself with `figure('Units', 'inches', 'Position', [1 1 6.5 4.5])` and use the two `exportgraphics` lines in step 3.)
 
 ## Common Defects → Fix
 
