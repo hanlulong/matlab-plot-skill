@@ -16,7 +16,7 @@ function export_publication_figure(fig, outputPath, opts)
 %   dimension you omit keeps the figure's current size, so a size set with
 %   figure('Units','inches','Position',...) is respected. MATLAB's default
 %   figure size depends on the platform and session (about 10 x 6 in under
-%   matlab -batch), so a warning is issued when neither dimension is passed
+%   matlab -batch), so a warning is issued when either dimension is omitted
 %   and the figure still has the default size. See
 %   references/matlab_figure_guidelines.md.
 %
@@ -125,14 +125,32 @@ end
 
 function apply_size(fig, opts)
 % Resize only the dimensions the caller passed; keep the rest of the figure's
-% current size.
-if isempty(opts.WidthInches) && isempty(opts.HeightInches)
+% current size. Check for MATLAB's default size BEFORE resizing, so a call
+% that passes only one dimension (e.g. WidthInches=6.5 on a plain figure())
+% still warns that the other dimension is MATLAB's default, not a choice.
+omitted = strings(1, 0);
+if isempty(opts.WidthInches)
+    omitted(end + 1) = "WidthInches";
+end
+if isempty(opts.HeightInches)
+    omitted(end + 1) = "HeightInches";
+end
+if ~isempty(omitted)
     fig.Units = 'pixels';
     defaultPosition = get(groot, 'defaultFigurePosition');
     if isequal(round(fig.Position(3:4)), round(defaultPosition(3:4)))
+        fig.Units = 'inches';
+        defaultInches = fig.Position(3:4);
+        if numel(omitted) == 2
+            missing = "neither WidthInches nor HeightInches was passed";
+        else
+            missing = omitted + " was not passed";
+        end
         warning('export_publication_figure:defaultSize', ...
-            ['The figure still has MATLAB''s default size; pass WidthInches ' ...
-            'and HeightInches for its final printed size.']);
+            ['The figure still has MATLAB''s default size (%.2f x %.2f in) ' ...
+            'and %s, so the export keeps that default. Pass WidthInches ' ...
+            'and HeightInches for the final printed size.'], ...
+            defaultInches(1), defaultInches(2), missing);
     end
 end
 

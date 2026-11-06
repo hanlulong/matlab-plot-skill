@@ -32,9 +32,24 @@ end
 function testResizesOnlyPassedDimension(testCase)
 fig = figure('Units', 'inches', 'Position', [1 1 8 7]);
 plot(1:3);
-export_publication_figure(fig, 'width.pdf', WidthInches=6.5);
+% The caller chose the height, so passing only the width must not warn.
+testCase.verifyWarningFree(@() export_publication_figure(fig, 'width.pdf', ...
+    WidthInches=6.5));
 fig.Units = 'inches';
 testCase.verifyEqual(fig.Position(3:4), [6.5 7], 'AbsTol', 0.02);
+end
+
+function testWarnsWhenOneDimensionKeepsDefault(testCase)
+% 0.1.0 taught `fig = figure; ... WidthInches=6.5`; the height then stays at
+% MATLAB's default, so the helper must warn and name the omitted dimension.
+fig = figure;
+plot(1:3);
+testCase.verifyWarning(@() export_publication_figure(fig, 'w.pdf', ...
+    WidthInches=6.5), 'export_publication_figure:defaultSize');
+testCase.verifySubstring(default_size_warning(@() export_publication_figure( ...
+    figure, 'w2.pdf', WidthInches=3.49)), 'HeightInches was not passed');
+testCase.verifySubstring(default_size_warning(@() export_publication_figure( ...
+    figure, 'h.pdf', HeightInches=4)), 'WidthInches was not passed');
 end
 
 function testWarnsOnDefaultSize(testCase)
@@ -115,6 +130,23 @@ testCase.verifyEqual(char(fig.Theme.BaseColorStyle), 'light');
 img = imread('dark.png');
 center = img(round(end/2), round(end/2), :);
 testCase.verifyGreaterThan(min(center(:)), 200, 'Plot box should be light.');
+end
+
+function msg = default_size_warning(fcn)
+% Run fcn with the defaultSize warning promoted to an error and return its
+% message ('' if it was not raised).
+state = warning('error', 'export_publication_figure:defaultSize');
+restore = onCleanup(@() warning(state));
+msg = '';
+try
+    fcn();
+catch err
+    if strcmp(err.identifier, 'export_publication_figure:defaultSize')
+        msg = err.message;
+    else
+        rethrow(err);
+    end
+end
 end
 
 function fonts = pdf_font_names(pdfPath)
