@@ -197,9 +197,23 @@ def check_plugin_manifests(repo_root: Path) -> None:
             raise SystemExit(f"{manifest_path} skills must be a './'-relative path.")
         if not (repo_root / skills / "SKILL.md").is_file():
             raise SystemExit(f"{manifest_path} skills path {skills!r} has no SKILL.md.")
-    interface = json.loads(
-        (repo_root / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8")
-    ).get("interface", {})
+    claude_manifest, codex_manifest = (
+        json.loads((repo_root / path).read_text(encoding="utf-8")) for path in PLUGIN_MANIFESTS
+    )
+    if claude_manifest.get("description") != codex_manifest.get("description"):
+        raise SystemExit("The two plugin manifests must have the same description.")
+    interface = codex_manifest.get("interface", {})
+    # The OpenEconAI catalog requires its displayName to equal this one, and the
+    # standalone skill's Codex UI name (openai.yaml) should match it too.
+    openai_config = yaml.safe_load(
+        (repo_root / SKILL_DIR / "agents" / "openai.yaml").read_text(encoding="utf-8")
+    ) or {}
+    display_name = openai_config.get("interface", {}).get("display_name")
+    if not interface.get("displayName") or interface.get("displayName") != display_name:
+        raise SystemExit(
+            ".codex-plugin/plugin.json interface.displayName must match "
+            f"agents/openai.yaml display_name ({display_name!r})."
+        )
     prompts = interface.get("defaultPrompt", [])
     if not isinstance(prompts, list) or len(prompts) > 3 or any(
         not isinstance(prompt, str) or len(prompt) > 128 for prompt in prompts

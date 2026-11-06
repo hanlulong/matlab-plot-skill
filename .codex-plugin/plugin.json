@@ -19,7 +19,7 @@
   ],
   "skills": "./matlab-plot-skill/",
   "interface": {
-    "displayName": "Publication-Quality MATLAB Figures",
+    "displayName": "MATLAB Plot",
     "shortDescription": "Create or fix MATLAB figures and export clean PDF plots",
     "longDescription": "Build new MATLAB figures or clean up messy ones for papers, LaTeX or Overleaf, and Beamer slides. The agent runs MATLAB, exports a vector PDF plus a PNG preview, reads the rendered figure, and iterates until the layout is clean.",
     "developerName": "Lu Han",
