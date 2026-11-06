@@ -41,7 +41,7 @@ Do not stop after writing plotting code.
    exportgraphics(fig, 'figure.pdf', 'ContentType', 'vector');   % deliverable
    exportgraphics(fig, 'figure.png', 'Resolution', 220);         % what you read
    ```
-   On R2025a+ add `'Width', w, 'Height', h, 'Units', 'inches'` to both calls. Without them the export is cropped to its content, about 5–15% smaller than the figure, and LaTeX scales the text up to fill the width. (Or pass `PreviewPath` to `scripts/export_publication_figure.m`, which exports both files at the exact size.)
+   On R2025a+ add `'Width', w, 'Height', h, 'Units', 'inches'` to both calls, with `w` and `h` equal to the figure's final size (the same values as its `Position` in inches): `exportgraphics` re-lays the content out into that box, so a size that differs from the figure shifts text sizes. Without these options the export is cropped to its content, about 5–15% smaller than the figure, and LaTeX scales the text up to fill the width. (Or pass `PreviewPath` to `scripts/export_publication_figure.m`, which exports both files at the exact size.)
 4. **Read the PNG** with your image-reading tool. You cannot visually inspect a vector PDF directly, so the PNG preview is the read target — the PDF is the deliverable. If only a PDF exists, rasterize page 1 first (`pdftoppm -png -r 200 -singlefile figure.pdf out` or `magick -density 200 figure.pdf out.png`, both producing `out.png`).
 5. If you can compile the document, render the embedded page and read it too. This step is conditional — never skip step 4 because step 5 is impossible.
 6. **Critique** the rendered PNG against [`references/render_review_checklist.md`](./references/render_review_checklist.md): aspect ratio, whitespace, title readability, legend placement, font sizes, clipping, marker visibility, line weights, panel balance, and page fit.
@@ -51,11 +51,10 @@ Do not stop after writing plotting code.
 
 ## Worked Recipe
 
-The full loop in one place — build, export both files, then read the PNG. `${CLAUDE_SKILL_DIR}` is the folder containing this SKILL.md; Claude Code fills it in. If it still appears literally (as in Codex), use the folder this file was loaded from: typically `~/.agents/skills/matlab-plot-skill`, or a folder under `~/.codex/plugins/cache/` for a plugin install.
+The full loop in one place — build, export both files, then read the PNG. First copy the helper, `${CLAUDE_SKILL_DIR}/scripts/export_publication_figure.m`, next to the plotting script (for example into `Plots/`), so the script runs without this skill. Never write the skill's own path into the user's `.m` file: a plugin install lives in a version-numbered folder that is replaced on update, and coauthors or a replication package do not have it. `${CLAUDE_SKILL_DIR}` is the folder containing this SKILL.md; Claude Code fills it in. If it still appears literally (as in Codex), use the folder this file was loaded from: typically `~/.agents/skills/matlab-plot-skill`, or a folder under `~/.codex/plugins/cache/` for a plugin install.
 
 ```matlab
-addpath(fullfile('${CLAUDE_SKILL_DIR}', 'scripts'));
-
+% Plots/make_figure.m -- export_publication_figure.m sits in Plots/ too.
 fig = figure;
 tl = tiledlayout(fig, 2, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
 nexttile; plot(x, y1); title('Panel A');
@@ -90,7 +89,7 @@ Look for these in the rendered PNG; read [`references/matlab_figure_guidelines.m
 
 ## Helper
 
-[`scripts/export_publication_figure.m`](./scripts/export_publication_figure.m) applies the final size you pass, readable font and line defaults, one font across all text, and the vector-PDF + PNG-preview export. Copy it into the project, or add its folder to the MATLAB path (`addpath(fullfile('${CLAUDE_SKILL_DIR}', 'scripts'))`) before calling it, as in the recipe above.
+[`scripts/export_publication_figure.m`](./scripts/export_publication_figure.m) applies the final size you pass, readable font and line defaults, one font across all text, and the vector-PDF + PNG-preview export. Copy it into the project next to the plotting script, as in the recipe above; that is the default for any script that will be re-run. For a one-off render only, you may instead put the skill's `scripts` folder on the path in the command line, never in the user's `.m` file: `matlab -batch "addpath('${CLAUDE_SKILL_DIR}/scripts'); addpath('Plots'); make_figure"`.
 
 ## Report Back
 

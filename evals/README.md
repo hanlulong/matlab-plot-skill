@@ -17,12 +17,13 @@ When you change the skill or the helper, run a few real tasks end to end and che
 - [ ] Runs the script from the project root by name (`addpath(...)`, then the script name), not with `run(...)` from another folder.
 - [ ] Runs MATLAB, reads the PNG preview, and names at least one concrete thing it fixed after looking.
 - [ ] On R2025a+, `pdfinfo` reports the PDF page at the requested size (inches x 72).
-- [ ] Delivers a vector PDF whose fonts are all one family (`pdffonts`).
+- [ ] Delivers a vector PDF whose fonts are all one family (`pdffonts`), apart from any `Interpreter='latex'` labels, which stay in Computer Modern.
 
 **New figure from data.** Prompt: "Plot the impulse responses in `irf.mat` with 68% and 90% bands for my paper."
 
 - [ ] Draws bands as shaded patches behind the lines, in the line's color.
 - [ ] Passes `WidthInches` and `HeightInches` to the helper (or sets the figure size explicitly).
+- [ ] Copies `export_publication_figure.m` into the project next to the script and does not write the skill's install path (or an `addpath` to it) into the user's `.m` file.
 - [ ] Reports the PNG path it read.
 
 **MATLAB not on `PATH`.** Same prompt with MATLAB installed but missing from `PATH` (the usual macOS case).
