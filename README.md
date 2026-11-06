@@ -66,7 +66,7 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 
 ## Install
 
-Install the skill as a plugin from the [OpenEconAI plugin catalog](https://github.com/OpenEconAI/plugins), or copy it into your skills folders with the installers below. Pick one per client: with both, the skill loads twice.
+Install the skill as a plugin from the [OpenEconAI plugin catalog](https://github.com/OpenEconAI/plugins), ask your agent to install it for you, or copy it into your skills folders with the installers below. Pick one per client: with both, the skill loads twice.
 
 ### As a plugin
 
@@ -84,7 +84,30 @@ codex plugin marketplace add OpenEconAI/plugins
 codex plugin add matlab-plot-skill@openeconai
 ```
 
-Plugin skills are namespaced: invoke this one as `/matlab-plot-skill:matlab-plot-skill` in Claude Code or `$matlab-plot-skill:matlab-plot-skill` in Codex, or just describe the task.
+Start a new Codex session after installing; Codex loads a plugin's skills in new sessions.
+
+Plugin skills are namespaced: invoke this one as `/matlab-plot-skill:matlab-plot-skill` in Claude Code. In Codex, type `@` and pick the plugin or its skill, or mention `$matlab-plot-skill:matlab-plot-skill`. In either client you can also just describe the task.
+
+### Paste-to-agent install
+
+Open Claude Code or Codex in any folder and paste this prompt. It installs the standalone skill (not the plugin) for that client only:
+
+```text
+Install or update matlab-plot-skill as a standalone skill for the client I am
+using (Claude Code or Codex) from https://github.com/hanlulong/matlab-plot-skill.
+If the matlab-plot-skill@openeconai plugin is installed in this client, remove
+it first. Clone the repo to a stable folder outside every skills directory, or
+git pull an existing clone, then run its installer for this client only:
+./install.sh --target claude|codex --force (or .\install.ps1 -Target
+claude|codex -Force on Windows). If the installer warns about an older copy in
+~/.codex/skills, remove it with the command it prints. Check that
+`matlab -batch "disp(version)"` works (in Codex, run it outside the sandbox).
+If matlab is not on PATH, look in /Applications/MATLAB_R20*.app/bin,
+C:\Program Files\MATLAB\R20*\bin or /usr/local/MATLAB/R20*/bin and tell me how
+to add it. Then confirm the skill loads.
+```
+
+Paste it again later to update.
 
 ### From a clone
 
@@ -146,8 +169,8 @@ On Windows, use `Remove-Item -LiteralPath "$HOME\.codex\skills\matlab-plot-skill
 
 ## Update
 
-- Plugin, Claude Code: `claude plugin marketplace update openeconai`, then `claude plugin update matlab-plot-skill@openeconai`.
-- Plugin, Codex: `codex plugin marketplace upgrade openeconai`, then `codex plugin add matlab-plot-skill@openeconai`.
+- Plugin, Claude Code: in a terminal, run `claude plugin marketplace update openeconai`, then `claude plugin update matlab-plot-skill@openeconai`. Open sessions keep the old version until you run `/reload-plugins` in them; new sessions load the new one. (Inside a session, `/plugin marketplace update openeconai`, then **Update now** on the plugin's page in the `/plugin` **Installed** tab, does the same.)
+- Plugin, Codex: in a terminal, run `codex plugin marketplace upgrade openeconai`, then `codex plugin add matlab-plot-skill@openeconai`, and start a new Codex session.
 - Clone install: pull the repo and re-run the installer with `--force` (`-Force` on PowerShell), since the installer copies the skill:
 
   ```bash
@@ -160,7 +183,8 @@ On Windows, use `Remove-Item -LiteralPath "$HOME\.codex\skills\matlab-plot-skill
 
 ## Uninstall
 
-- Plugin: `claude plugin uninstall matlab-plot-skill@openeconai` in Claude Code, or `codex plugin remove matlab-plot-skill@openeconai` in Codex.
+- Plugin, Claude Code: in a terminal, run `claude plugin uninstall matlab-plot-skill@openeconai` (or, inside a session, choose **Uninstall** on the plugin's page in the `/plugin` **Installed** tab).
+- Plugin, Codex: in a terminal, run `codex plugin remove matlab-plot-skill@openeconai`, then start a new Codex session.
 - Clone install: delete the copied folders (the last one exists only if you installed before 2026-05-30):
 
   ```bash
@@ -181,7 +205,7 @@ In Claude Code, invoke the skill directly with `/matlab-plot-skill` (`/matlab-pl
 Clean up the MATLAB figure in make_irf_plot.m for my LaTeX paper: one shared legend, readable fonts at text width, vector PDF.
 ```
 
-In Codex, mention the skill with `$matlab-plot-skill` (`$matlab-plot-skill:matlab-plot-skill` after a plugin install):
+In Codex, mention the skill with `$matlab-plot-skill` (after a plugin install, type `@` and pick it, or use `$matlab-plot-skill:matlab-plot-skill`):
 
 ```text
 Use $matlab-plot-skill to refactor Plots/generate_my_figure.m into a publication-quality PDF figure. Read the exported figure and the compiled paper page, then iterate until the spacing and titles are clean.
@@ -222,6 +246,7 @@ This checks:
 - `SKILL.md` front matter against the Agent Skills rules and Codex's allowed keys, and that the body still expresses the render-review-iterate workflow
 - the version in `SKILL.md` metadata matches `CITATION.cff` and both plugin manifests, and has a dated `CHANGELOG.md` entry whose compare link ends at the `matlab-plot-skill--vX.Y.Z` tag
 - both plugin manifests parse, name the skill, share one description, and point at the folder that holds `SKILL.md`, and the Codex display name matches `openai.yaml`
+- the paste-to-agent install section holds exactly one prompt (the OpenEconAI catalog copies it verbatim)
 - the export helper still uses `exportgraphics` vector output, and the demo still calls that helper
 - relative markdown links resolve (README, CHANGELOG, RELEASING, SKILL.md, and the reference files)
 - `openai.yaml` skill metadata

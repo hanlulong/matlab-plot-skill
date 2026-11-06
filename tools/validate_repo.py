@@ -224,6 +224,22 @@ def check_plugin_manifests(repo_root: Path) -> None:
         )
 
 
+def check_standalone_prompt(repo_root: Path) -> None:
+    # The OpenEconAI catalog README copies this prompt verbatim, and its release
+    # test requires it to be the only ```text block in a README subsection.
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    heading = "\n### Paste-to-agent install\n"
+    if heading not in readme:
+        raise SystemExit("README.md must have a '### Paste-to-agent install' subsection.")
+    section = readme.split(heading, 1)[1].split("\n### ", 1)[0].split("\n## ", 1)[0]
+    blocks = re.findall(r"^```text\n(.*?)^```$", section, flags=re.M | re.S)
+    if len(blocks) != 1 or "github.com/hanlulong/matlab-plot-skill" not in blocks[0]:
+        raise SystemExit(
+            "README.md 'Paste-to-agent install' must hold exactly one ```text prompt "
+            "that names the repository URL."
+        )
+
+
 def check_trigger_evals(repo_root: Path) -> None:
     # Keep the trigger eval set loadable by skill-creator's scripts and balanced
     # between prompts that should and should not load the skill.
@@ -532,6 +548,7 @@ def main() -> None:
     parse_skill_front_matter(repo_root)
     check_versions(repo_root)
     check_plugin_manifests(repo_root)
+    check_standalone_prompt(repo_root)
     check_trigger_evals(repo_root)
     check_matlab_artifacts(repo_root)
     check_relative_links(repo_root)
