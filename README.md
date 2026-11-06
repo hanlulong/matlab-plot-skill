@@ -51,6 +51,15 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 ## Prerequisites
 
 - MATLAB R2021a or newer. The export helper uses `exportgraphics` (R2020a+) and argument validators such as `mustBeTextScalar` (R2020b+); the demo and the documented helper calls use name=value argument syntax (`WidthInches=6.5`), which requires R2021a+. On newer releases the helper also uses `fontname` (R2022a+) and figure themes (R2025a+) when they exist.
+- `matlab` on your `PATH`, so the agent can run `matlab -batch`. Check with `matlab -batch "disp(version)"`. On macOS MATLAB is often not on `PATH` after installation (MathWorks documents starting it from its `bin` folder). Link it into `/usr/local/bin`, adjusting the release name:
+
+  ```bash
+  sudo mkdir -p /usr/local/bin
+  sudo ln -s /Applications/MATLAB_R2026a.app/bin/matlab /usr/local/bin/matlab
+  ```
+
+  The skill also tells the agent to look in the usual install folders before it concludes that MATLAB is missing.
+- In Codex, MATLAB has to run outside the sandbox: on macOS it cannot start inside it (on Apple Silicon it exits with "Incompatible processor ... neon"). The skill tells Codex to ask for escalated permissions for the `matlab` command; approve that request when it appears.
 - Optional: `pdftoppm` (Poppler) or ImageMagick, so the agent can rasterize a PDF it needs to read.
 - For repo validation only: `uv` (or Python 3 with `pyyaml`).
 

@@ -29,11 +29,13 @@ Requires MATLAB R2021a+ (run headlessly with `matlab -batch`). Optional: `pdftop
 Do not stop after writing plotting code.
 
 1. **Read** the plotting script and the destination file (`.tex`, `.md`, slide deck) that will include the figure. Decide the figure's final printed width first. Find the width the document includes it at (`\linewidth`, `\columnwidth`, `\textwidth`, or a fraction such as `0.8\textwidth`). In a one-column document `\columnwidth` equals `\textwidth` (345 pt = 4.77 in for the default 10 pt `article`; 6.5 in with 1-in margins on letter paper); only two-column classes have a narrow column of about 3.2–3.5 in. When unsure, measure it: put `\typeout{\the\linewidth}` inside the figure environment, compile, and divide the logged points by 72.27 (see [Sizing And Page Fit](./references/matlab_figure_guidelines.md#sizing-and-page-fit)). Export at that width and size fonts for it.
-2. **Generate** the figure by running MATLAB headlessly, and lint any script you write:
+2. **Generate** the figure by running MATLAB headlessly from the folder the script expects (usually the project root), and lint any script you write:
    ```bash
-   matlab -batch "checkcode('make_figure.m'); run('make_figure.m')"
+   matlab -batch "addpath('Plots'); checkcode('Plots/make_figure.m'); make_figure"
    ```
-   `-batch` runs without a desktop, exits when finished, and returns a nonzero exit code on error; `checkcode` surfaces syntax/usage warnings to fix before you trust the run.
+   Calling the script by name keeps MATLAB in the current folder, so paths such as `load('data/irf.mat')` resolve from the project root. `run('Plots/make_figure.m')` changes into `Plots/` while the script runs and breaks those paths; use it only for scripts that build their paths from `mfilename('fullpath')`. `-batch` runs without a desktop, exits when finished, and returns a nonzero exit code on error; `checkcode` surfaces syntax/usage warnings to fix before you trust the run.
+   - **`matlab: command not found`** often means MATLAB is installed but not on `PATH`, which is common on macOS (MathWorks documents starting it from `matlabroot/bin`). Before concluding MATLAB is missing, look for `/Applications/MATLAB_R20*.app/bin/matlab` (macOS), `C:\Program Files\MATLAB\R20*\bin\matlab.exe` (Windows), or `/usr/local/MATLAB/R20*/bin/matlab` (Linux), and call it by its full path.
+   - **In Codex**, MATLAB cannot start inside the sandbox on macOS. On Apple Silicon it exits with `Incompatible processor. This Qt build requires the following features: neon` (exit code 137). That message means the sandbox blocked MATLAB, not that MATLAB is broken or missing. Request escalated permissions to run the `matlab` command outside the sandbox, and let the user approve it; do not retry inside the sandbox.
 3. **Export** a vector PDF for the paper and a raster PNG preview:
    ```matlab
    exportgraphics(fig, 'figure.pdf', 'ContentType', 'vector');   % deliverable
@@ -45,7 +47,7 @@ Do not stop after writing plotting code.
 6. **Critique** the rendered PNG against [`references/render_review_checklist.md`](./references/render_review_checklist.md): aspect ratio, whitespace, title readability, legend placement, font sizes, clipping, marker visibility, line weights, panel balance, and page fit.
 7. **Iterate** on the MATLAB code and repeat the export until the figure is clearly professional.
 
-**If MATLAB is not available**, do not claim the figure was rendered or reviewed. Deliver the refactored `.m` code, state plainly that it was not executed or visually verified, and give the user the exact `matlab -batch` command to run plus what to check. The same honesty applies whenever you cannot read the rendered figure for any reason.
+**If MATLAB is not available** (not on `PATH`, not in the usual install folders, or not allowed to run outside the sandbox), do not claim the figure was rendered or reviewed. Deliver the refactored `.m` code, state plainly that it was not executed or visually verified, and give the user the exact `matlab -batch` command to run plus what to check. The same honesty applies whenever you cannot read the rendered figure for any reason.
 
 ## Worked Recipe
 
