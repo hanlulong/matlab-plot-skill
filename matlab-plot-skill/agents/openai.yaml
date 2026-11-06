@@ -1,6 +1,6 @@
 interface:
   display_name: "Publication-Quality MATLAB Figures"
-  short_description: "Fix messy MATLAB figures and export clean PDF plots."
+  short_description: "Create or fix MATLAB figures and export clean PDF plots."
   default_prompt: "Use $matlab-plot-skill to fix a messy MATLAB figure, export a clean PDF, read the rendered figure, and iterate until the layout is publication-quality."
 
 policy:
