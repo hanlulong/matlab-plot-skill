@@ -132,6 +132,31 @@ center = img(round(end/2), round(end/2), :);
 testCase.verifyGreaterThan(min(center(:)), 200, 'Plot box should be light.');
 end
 
+function testStylesBothYyaxisLabels(testCase)
+% get(ax, 'YLabel') returns only the active side on yyaxis axes; both sides
+% must get AxisFontSize. A datetime x-axis checks mixed ruler classes.
+fig = figure('Units', 'inches', 'Position', [1 1 6.5 4]);
+ax = axes(fig);
+t = datetime(2020, 1, 1) + calmonths(0:9);
+yyaxis(ax, 'left'); plot(ax, t, 1:10); ylabel(ax, 'Rate', 'FontSize', 20);
+yyaxis(ax, 'right'); plot(ax, t, 10:-1:1); ylabel(ax, 'Level', 'FontSize', 20);
+xlabel(ax, 'Month', 'FontSize', 20);
+export_publication_figure(fig, 'yy.pdf', AxisFontSize=9);
+labelSizes = arrayfun(@(ruler) ruler.Label.FontSize, ax.YAxis);
+testCase.verifyEqual(labelSizes(:)', [9 9]);
+testCase.verifyEqual(ax.XAxis.Label.FontSize, 9);
+end
+
+function testBareStringPathExportsWithoutWarning(testCase)
+% A string path with no folder ("s.pdf") must not call mkdir("") (which
+% warns on every export).
+fig = figure('Units', 'inches', 'Position', [1 1 4 3]);
+plot(1:3);
+testCase.verifyWarningFree(@() export_publication_figure(fig, "s.pdf", ...
+    PreviewPath="s.png"));
+testCase.verifyTrue(isfile('s.pdf') && isfile('s.png'));
+end
+
 function testExportedPageMatchesFigureSize(testCase)
 % On R2025a+ the PDF page and the PNG preview must be the requested size,
 % not the tight crop, including when the same figure is re-exported at a

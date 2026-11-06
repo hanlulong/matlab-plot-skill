@@ -32,10 +32,14 @@ function export_publication_figure(fig, outputPath, opts)
 %   the caller chose.
 %
 %   Notes:
-%   - Axes, axes titles, axis labels, legends, and a tiledlayout's shared
-%     X/Y labels get the font sizes below. Every text object in the figure
-%     (including text() annotations, xline/yline labels, and colorbars) gets
-%     opts.FontName, so the PDF does not mix fonts.
+%   - Axes, axes titles, axis labels (both sides of yyaxis axes), legends,
+%     and a tiledlayout's shared X/Y labels get the font sizes below. Every
+%     text object in the figure (including text() annotations, xline/yline
+%     labels, and colorbars) gets opts.FontName, so the PDF does not mix
+%     fonts. The exception is text with Interpreter='latex', which MATLAB
+%     always typesets in Computer Modern (pdffonts lists mwa_cmr10 /
+%     mwa_cmmi10); that is expected. Use the 'tex' interpreter (e.g.
+%     '\pi_t') when a label should use the figure font.
 %   - The layout (super) title keeps the caller's size and weight unless
 %     SuperTitleFontSize and/or SuperTitleFontWeight is passed.
 %   - On R2025a+ the figure is switched to the light theme so a dark-theme
@@ -222,14 +226,17 @@ if isgraphics(titleHandle)
     titleHandle.FontWeight = opts.TitleFontWeight;
 end
 
-xlabelHandle = get(ax, 'XLabel');
-if isgraphics(xlabelHandle)
-    xlabelHandle.FontSize = opts.AxisFontSize;
-end
-
-ylabelHandle = get(ax, 'YLabel');
-if isgraphics(ylabelHandle)
-    ylabelHandle.FontSize = opts.AxisFontSize;
+% Style every ruler's label, not just get(ax, 'YLabel'), which returns only
+% the active side's label on yyaxis axes and would leave the other side at
+% MATLAB's 1.1x label size.
+% Loop per axis: X, Y and Z rulers can be different classes (numeric,
+% datetime, categorical), so they are not concatenated into one array.
+for rulers = {ax.XAxis, ax.YAxis, ax.ZAxis}
+    for ruler = reshape(rulers{1}, 1, [])
+        if isgraphics(ruler.Label)
+            ruler.Label.FontSize = opts.AxisFontSize;
+        end
+    end
 end
 
 lineList = findall(ax, 'Type', 'line');
@@ -257,8 +264,10 @@ end
 
 function ensure_parent_dir(filePath)
 % exportgraphics does not create missing folders, so create the parent first.
+% strlength, not isempty: for a string path with no folder ("s.pdf"),
+% fileparts returns the 1x1 string "", which isempty treats as nonempty.
 parentDir = fileparts(filePath);
-if ~isempty(parentDir) && ~isfolder(parentDir)
+if strlength(parentDir) > 0 && ~isfolder(parentDir)
     mkdir(parentDir);
 end
 end
