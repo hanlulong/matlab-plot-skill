@@ -17,6 +17,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - The helper sets one font on every text object (`fontname`, R2022a+, with a `findall` fallback), so `text()` annotations and `xline`/`yline` labels no longer leave a second font in the PDF.
 - The helper switches R2025a+ figures to the light theme before export, so a dark-theme session no longer exports gray text on a black plot box.
 - `tests/test_export_publication_figure.m`: MATLAB unit tests for size, spacing, super title, fonts, and the dark theme.
+- `evals/`: 16 trigger prompts (8 should-trigger, 8 near-miss should-not-trigger) in skill-creator's format, plus end-to-end quality checklists.
 - Installers warn when an older copy is still installed in Codex's deprecated `~/.codex/skills` (or `$CODEX_HOME/skills`), which Codex loads as a duplicate, and print the removal command. They never delete it.
 - `install.sh --help`; comment-based help for `install.ps1` (`Get-Help .\install.ps1`).
 - SKILL.md frontmatter: `license: MIT` and `metadata.version`.

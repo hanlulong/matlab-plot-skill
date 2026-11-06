@@ -1,0 +1,66 @@
+[
+  {
+    "query": "my advisor says the figures in chapter 3 look amateurish. can you clean up figs/irf_panels.m so the 2x3 subplot grid isn't so cramped and export a pdf I can drop into overleaf?",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a MATLAB script that loads irf.mat (variables h, irf_y, irf_pi, lo68, hi68, lo90, hi90) and plots output and inflation impulse responses with 68% and 90% bands, saved as a vector PDF sized for the full text width of my paper.",
+    "should_trigger": true
+  },
+  {
+    "query": "exportgraphics keeps giving me a PDF where the legend covers half of panel B and the tick labels look tiny once the figure is in my two-column paper. Fix plot_results.m.",
+    "should_trigger": true
+  },
+  {
+    "query": "convert the subplot calls in make_fig2.m to tiledlayout with one shared legend at the bottom, I want it journal-ready",
+    "should_trigger": true
+  },
+  {
+    "query": "the event-study plot I made in MATLAB is unreadable on my beamer slide (16:9). can you redo the figure so it works on the slide?",
+    "should_trigger": true
+  },
+  {
+    "query": "My MATLAB pcolor heatmap exports to a 40 MB PDF and Overleaf times out compiling. Can you make plot_density.m produce something lighter that still looks sharp?",
+    "should_trigger": true
+  },
+  {
+    "query": "saveas(gcf,'fig2.eps') output looks blurry in my LaTeX doc and the axis labels are too small. switch it to something better",
+    "should_trigger": true
+  },
+  {
+    "query": "Reviewers complained that the colors in my 4-panel MATLAB figure mean different things in different panels. In results/fig_main.m make inflation always blue and output always orange, then re-export and check it.",
+    "should_trigger": true
+  },
+  {
+    "query": "clean up this matplotlib figure: fig, axes = plt.subplots(2, 2); the legend overlaps panel B. export it to pdf for my paper",
+    "should_trigger": false
+  },
+  {
+    "query": "make a bar chart in Excel of quarterly sales by region and paste it into the board deck",
+    "should_trigger": false
+  },
+  {
+    "query": "my ggplot2 event-study plot has overlapping x labels, fix it and ggsave at 6.5 in wide",
+    "should_trigger": false
+  },
+  {
+    "query": "In MATLAB, why does fmincon return exitflag -2 for this constrained likelihood? The code is in estimate_model.m.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write the caption and figure notes for Figure 3 in my paper; it shows impulse responses of output to a monetary policy shock with 90% bands.",
+    "should_trigger": false
+  },
+  {
+    "query": "Stata coefplot output looks cramped; adjust the graph export so it fits the page",
+    "should_trigger": false
+  },
+  {
+    "query": "Translate this MATLAB plotting script into Python using matplotlib and seaborn",
+    "should_trigger": false
+  },
+  {
+    "query": "Compile my Overleaf project and fix the undefined reference warnings in main.tex",
+    "should_trigger": false
+  }
+]

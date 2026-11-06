@@ -44,6 +44,7 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 - [`examples/demo_publication_figure.m`](./examples/demo_publication_figure.m)
 - [`examples/output/demo_publication_figure.png`](./examples/output/demo_publication_figure.png) (committed preview image)
 - [`tests/test_export_publication_figure.m`](./tests/test_export_publication_figure.m) (MATLAB unit tests for the helper)
+- [`evals/`](./evals/README.md) (trigger prompts and end-to-end quality checks)
 - [`tools/validate_repo.py`](./tools/validate_repo.py)
 - [`CHANGELOG.md`](./CHANGELOG.md), [`LICENSE`](./LICENSE), [`CITATION.cff`](./CITATION.cff)
 
@@ -164,6 +165,7 @@ This checks:
 - the export helper still uses `exportgraphics` vector output, and the demo still calls that helper
 - relative markdown links resolve (README, CHANGELOG, SKILL.md, and the reference files)
 - `openai.yaml` skill metadata
+- `evals/trigger-evals.json` parses and has both should-trigger and should-not-trigger prompts
 - PowerShell install flow (when PowerShell is available), including the legacy-copy warning
 - bash install flow (when bash is available), including `--help` and the legacy-copy warning
 

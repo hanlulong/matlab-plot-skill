@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -36,6 +37,8 @@ REQUIRED_FILES = [
     "examples/output/demo_publication_figure.png",
     # MATLAB regression tests for the export helper (run when MATLAB exists).
     "tests/test_export_publication_figure.m",
+    "evals/README.md",
+    "evals/trigger-evals.json",
     # Dev dependency manifest referenced by the README pip path.
     "requirements-dev.txt",
 ]
@@ -152,6 +155,24 @@ def check_versions(repo_root: Path) -> None:
         raise SystemExit(f"CHANGELOG.md has no entry for version {skill_version}.")
 
 
+def check_trigger_evals(repo_root: Path) -> None:
+    # Keep the trigger eval set loadable by skill-creator's scripts and balanced
+    # between prompts that should and should not load the skill.
+    items = json.loads((repo_root / "evals" / "trigger-evals.json").read_text(encoding="utf-8"))
+    if not isinstance(items, list) or not all(
+        isinstance(item, dict)
+        and isinstance(item.get("query"), str)
+        and isinstance(item.get("should_trigger"), bool)
+        for item in items
+    ):
+        raise SystemExit('evals/trigger-evals.json must be a list of {"query", "should_trigger"}.')
+    positives = sum(item["should_trigger"] for item in items)
+    if positives < 3 or len(items) - positives < 2:
+        raise SystemExit(
+            "evals/trigger-evals.json needs at least 3 should-trigger and 2 should-not-trigger prompts."
+        )
+
+
 def check_matlab_artifacts(repo_root: Path) -> None:
     # MATLAB is not assumed to be installed, so guard the repo's headline
     # promise (vector export helper + demo that uses it) with static checks.
@@ -177,7 +198,13 @@ def check_matlab_artifacts(repo_root: Path) -> None:
 def check_relative_links(repo_root: Path) -> None:
     # Catch rotted relative markdown links/images (e.g. a moved hero image or a
     # renamed reference file) that would 404 on GitHub.
-    docs = ["README.md", "CHANGELOG.md", "examples/README.md", f"{SKILL_DIR}/SKILL.md"]
+    docs = [
+        "README.md",
+        "CHANGELOG.md",
+        "examples/README.md",
+        "evals/README.md",
+        f"{SKILL_DIR}/SKILL.md",
+    ]
     docs += sorted(
         str(path.relative_to(repo_root))
         for path in (repo_root / SKILL_DIR / "references").glob("*.md")
@@ -343,6 +370,7 @@ def main() -> None:
     assert_exists(repo_root)
     parse_skill_front_matter(repo_root)
     check_versions(repo_root)
+    check_trigger_evals(repo_root)
     check_matlab_artifacts(repo_root)
     check_relative_links(repo_root)
     parse_openai_yaml(repo_root)
