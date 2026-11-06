@@ -149,9 +149,11 @@ function Test-LegacyCodexCopy {
     if (-not $legacyItem) {
         return
     }
-    $installedRoot = (Resolve-Path -LiteralPath $CodexSkillsPath).ProviderPath.TrimEnd('\', '/')
-    $legacyResolved = (Resolve-Path -LiteralPath $legacyRoot).ProviderPath.TrimEnd('\', '/')
-    if ($installedRoot -eq $legacyResolved) {
+    # Compare physical paths: when ~\.codex\skills is a link to ~\.agents\skills,
+    # the "old copy" is the one just installed and must not be flagged.
+    $installedRoot = (Get-PhysicalPath $CodexSkillsPath).TrimEnd('\', '/')
+    $legacyResolved = (Get-PhysicalPath $legacyRoot).TrimEnd('\', '/')
+    if ([string]::Equals($installedRoot, $legacyResolved, [System.StringComparison]::OrdinalIgnoreCase)) {
         return  # The caller installed into the legacy directory on purpose.
     }
     Write-Warning "An older copy of matlab-plot-skill is still installed at $legacy."

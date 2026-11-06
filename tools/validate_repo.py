@@ -351,6 +351,32 @@ def check_refuses_own_clone(
             raise SystemExit(f"{label} installer deleted the clone it was run from.")
 
 
+def check_linked_legacy_root(
+    make_command: Callable[[Path], list[str]], repo_root: Path, tmp_path: Path, label: str
+) -> None:
+    # When $CODEX_HOME/skills is a link to the Codex skills folder, the copy
+    # just installed is not an "older copy" and must not be flagged.
+    codex_skills = tmp_path / "linked-agents-skills"
+    codex_home = tmp_path / "linked-codex-home"
+    codex_skills.mkdir()
+    codex_home.mkdir()
+    try:
+        (codex_home / "skills").symlink_to(codex_skills, target_is_directory=True)
+    except OSError:
+        print(f"Skipping {label} linked legacy-root check: cannot create symlinks.")
+        return
+    env = dict(os.environ)
+    env["CODEX_HOME"] = str(codex_home)
+    result = subprocess.run(
+        make_command(codex_skills), cwd=repo_root, env=env, capture_output=True, text=True
+    )
+    if result.returncode != 0 or "older copy" in result.stdout + result.stderr:
+        raise SystemExit(
+            f"{label} installer flagged the copy it just installed as an older copy "
+            "when $CODEX_HOME/skills links to the Codex skills folder."
+        )
+
+
 def run_powershell_install(repo_root: Path) -> None:
     if shutil.which("pwsh") is None and shutil.which("powershell") is None:
         print("Skipping PowerShell installer test: PowerShell not found.")
@@ -402,6 +428,12 @@ def run_powershell_install(repo_root: Path) -> None:
             ]
 
         check_refuses_own_clone(ps_command, repo_root, tmp_path, "PowerShell")
+        check_linked_legacy_root(
+            lambda codex_skills: ps_command(repo_root, codex_skills, "codex"),
+            repo_root,
+            tmp_path,
+            "PowerShell",
+        )
 
 
 def run_bash_install(repo_root: Path) -> None:
@@ -468,6 +500,12 @@ def run_bash_install(repo_root: Path) -> None:
             ]
 
         check_refuses_own_clone(sh_command, repo_root, tmp_path, "Bash")
+        check_linked_legacy_root(
+            lambda codex_skills: sh_command(repo_root, codex_skills, "codex"),
+            repo_root,
+            tmp_path,
+            "Bash",
+        )
 
 
 def main() -> None:

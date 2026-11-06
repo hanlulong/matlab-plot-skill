@@ -226,8 +226,8 @@ This checks:
 - relative markdown links resolve (README, CHANGELOG, RELEASING, SKILL.md, and the reference files)
 - `openai.yaml` skill metadata
 - `evals/trigger-evals.json` parses and has both should-trigger and should-not-trigger prompts
-- PowerShell install flow (when PowerShell is available), including the legacy-copy warning, and the refusal to install over the clone itself
-- bash install flow (when bash is available), including `--help`, the legacy-copy warning, and the refusal to install over the clone itself
+- PowerShell install flow (when PowerShell is available), including the legacy-copy warning, a linked `~/.codex/skills`, and the refusal to install over the clone itself
+- bash install flow (when bash is available), including `--help`, the legacy-copy warning, a linked `~/.codex/skills`, and the refusal to install over the clone itself
 
 With MATLAB installed, also run the helper's unit tests from the repository root:
 
