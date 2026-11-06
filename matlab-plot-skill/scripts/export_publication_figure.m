@@ -67,9 +67,11 @@ arguments
 end
 
 % Accept "Bold", "BOLD", etc.; validatestring returns the canonical spelling.
-opts.TitleFontWeight = validatestring(opts.TitleFontWeight, ["normal", "bold"]);
+opts.TitleFontWeight = validatestring(opts.TitleFontWeight, ["normal", "bold"], ...
+    mfilename, "TitleFontWeight");
 if strlength(opts.SuperTitleFontWeight) > 0
-    opts.SuperTitleFontWeight = validatestring(opts.SuperTitleFontWeight, ["normal", "bold"]);
+    opts.SuperTitleFontWeight = validatestring(opts.SuperTitleFontWeight, ...
+        ["normal", "bold"], mfilename, "SuperTitleFontWeight");
 end
 
 % R2025a+ figures can inherit a dark theme (desktop or MCP sessions), which
