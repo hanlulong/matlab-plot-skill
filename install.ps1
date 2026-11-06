@@ -90,7 +90,8 @@ function Test-LegacyCodexCopy {
 }
 
 # Claude Code watches skill directories that existed when a session started;
-# a newly created top-level skills directory needs /reload-skills once.
+# a newly created top-level skills directory needs /reload-skills (and again
+# after each later change) until a new session starts.
 $claudeRootExisted = Test-Path -LiteralPath $ClaudeSkillsPath
 
 switch ($Target) {
