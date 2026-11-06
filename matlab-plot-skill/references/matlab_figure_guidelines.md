@@ -119,11 +119,11 @@ If figure-level PDF export looks wrong:
 
 ## Rasterizing Heavy Figures
 
-A vector PDF is the wrong choice for figures with many thousands of primitives (dense scatter, large `pcolor`/`surf`/`contourf`, maps): the file balloons and Overleaf compiles slowly. The symptom is a multi-megabyte PDF or a slow compile. (On R2026a, a 400 x 400 `pcolor` exports to about 3 MB and a 200,000-point `scatter` to about 32 MB.)
+A vector PDF is the wrong choice for figures with many thousands of primitives (dense scatter, large `pcolor`/`surf`/`contourf`, maps): the file balloons and Overleaf compiles slowly. The symptom is a multi-megabyte PDF or a slow compile. (On R2026a, a 400 x 400 `pcolor` exports to about 2-4 MB, depending on the data, and a 200,000-point `scatter` to about 32 MB.)
 
 `exportgraphics(..., 'ContentType', 'image')` rasterizes **everything** in that export, including tick labels, titles, and legends; the PDF then contains no fonts at all. There is no setting that rasterizes one panel while keeping the rest of the same export vector. In order of preference:
 
-1. Reduce the number of primitives so the vector export stays small and all text stays vector: draw gridded data with `imagesc`/`image` instead of `pcolor` or a flat `surf` (the data is embedded as a bitmap while text stays vector; the same 400 x 400 grid exports to about 30 KB), and replace dense scatters with `binscatter`, `histogram2`, or a downsample.
+1. Reduce the number of primitives so the vector export stays small and all text stays vector: draw gridded data with `imagesc`/`image` instead of `pcolor` or a flat `surf` (the data is embedded as a bitmap while text stays vector; the same 400 x 400 grid exports to about 25 KB for a smooth surface and about 150 KB for random noise, which compresses poorly), and replace dense scatters with `binscatter`, `histogram2`, or a downsample.
 2. Export the heavy panel on its own as an image (`exportgraphics(ax, 'panel.png', 'Resolution', 300)` or an image-only PDF) and assemble it with the vector panels in LaTeX, for example with `subcaption`.
 3. Export the whole figure with `ContentType='image'` at 300–600 DPI and accept raster text.
 
