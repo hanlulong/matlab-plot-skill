@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shutil
 import subprocess
@@ -11,8 +12,17 @@ from pathlib import Path
 import yaml
 
 
+SKILL_DIR = "matlab-plot-skill"
+
+# Keys accepted by both the Agent Skills spec and Codex's quick_validate.
+# (`compatibility` is valid in the spec but Codex's validator rejects it.)
+ALLOWED_FRONT_MATTER_KEYS = {"name", "description", "license", "metadata", "allowed-tools"}
+SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+
 REQUIRED_FILES = [
     "README.md",
+    "CHANGELOG.md",
+    "CITATION.cff",
     "install.ps1",
     "install.sh",
     "matlab-plot-skill/SKILL.md",
@@ -24,6 +34,8 @@ REQUIRED_FILES = [
     "examples/demo_publication_figure.m",
     # Committed hero image rendered at the top of README.md.
     "examples/output/demo_publication_figure.png",
+    # MATLAB regression tests for the export helper (run when MATLAB exists).
+    "tests/test_export_publication_figure.m",
     # Dev dependency manifest referenced by the README pip path.
     "requirements-dev.txt",
 ]
@@ -45,7 +57,13 @@ def parse_skill_front_matter(repo_root: Path) -> None:
     if len(parts) < 3:
         raise SystemExit("SKILL.md front matter is malformed.")
 
-    front_matter = yaml.safe_load(parts[1]) or {}
+    try:
+        front_matter = yaml.safe_load(parts[1]) or {}
+    except yaml.YAMLError as exc:
+        # A backslash inside a double-quoted YAML string (e.g. a LaTeX macro) is
+        # an invalid escape; clients would then load the skill with no metadata.
+        raise SystemExit(f"SKILL.md front matter is not valid YAML: {exc}") from None
+    check_front_matter_spec(front_matter)
     description = str(front_matter.get("description", "")).lower()
     # Stable single-word discoverability keywords. Multi-word phrases are
     # intentionally NOT required here so the description can be reworded freely.
@@ -82,6 +100,58 @@ def parse_skill_front_matter(repo_root: Path) -> None:
         )
 
 
+def check_front_matter_spec(front_matter: dict) -> None:
+    # Agent Skills spec rules plus Codex quick_validate's key allow-list, so a
+    # frontmatter edit cannot silently break loading in either client.
+    unexpected = set(front_matter) - ALLOWED_FRONT_MATTER_KEYS
+    if unexpected:
+        raise SystemExit(
+            "SKILL.md front matter has unsupported keys: " + ", ".join(sorted(unexpected))
+        )
+
+    name = front_matter.get("name")
+    if not isinstance(name, str) or not SKILL_NAME_PATTERN.match(name):
+        raise SystemExit(f"SKILL.md name must be lowercase hyphen-case, got {name!r}.")
+    if len(name) > 64:
+        raise SystemExit("SKILL.md name must be at most 64 characters.")
+    if name != SKILL_DIR:
+        raise SystemExit(f"SKILL.md name {name!r} must match its directory {SKILL_DIR!r}.")
+    if "claude" in name or "anthropic" in name:
+        raise SystemExit("SKILL.md name must not contain 'claude' or 'anthropic'.")
+
+    description = front_matter.get("description")
+    if not isinstance(description, str) or not description.strip():
+        raise SystemExit("SKILL.md description must be a non-empty string.")
+    if len(description) > 1024:
+        raise SystemExit(f"SKILL.md description is {len(description)} characters; max 1024.")
+    if "<" in description or ">" in description:
+        raise SystemExit("SKILL.md description must not contain angle brackets.")
+
+    metadata = front_matter.get("metadata", {})
+    if not isinstance(metadata, dict):
+        raise SystemExit("SKILL.md metadata must be a mapping.")
+    if "version" in metadata and not isinstance(metadata["version"], str):
+        raise SystemExit("SKILL.md metadata.version must be a quoted string.")
+
+
+def check_versions(repo_root: Path) -> None:
+    # Keep the release version in sync across SKILL.md, CITATION.cff, and the
+    # CHANGELOG so a release cannot ship with mismatched numbers.
+    skill_text = (repo_root / SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
+    front_matter = yaml.safe_load(skill_text.split("---\n", 2)[1]) or {}
+    skill_version = str((front_matter.get("metadata") or {}).get("version", ""))
+    citation = yaml.safe_load((repo_root / "CITATION.cff").read_text(encoding="utf-8"))
+    citation_version = str(citation.get("version", ""))
+    if not skill_version or skill_version != citation_version:
+        raise SystemExit(
+            f"Version mismatch: SKILL.md metadata.version={skill_version!r}, "
+            f"CITATION.cff version={citation_version!r}."
+        )
+    changelog = (repo_root / "CHANGELOG.md").read_text(encoding="utf-8")
+    if not re.search(rf"^## \[?{re.escape(skill_version)}\]?", changelog, re.MULTILINE):
+        raise SystemExit(f"CHANGELOG.md has no entry for version {skill_version}.")
+
+
 def check_matlab_artifacts(repo_root: Path) -> None:
     # MATLAB is not assumed to be installed, so guard the repo's headline
     # promise (vector export helper + demo that uses it) with static checks.
@@ -107,7 +177,11 @@ def check_matlab_artifacts(repo_root: Path) -> None:
 def check_relative_links(repo_root: Path) -> None:
     # Catch rotted relative markdown links/images (e.g. a moved hero image or a
     # renamed reference file) that would 404 on GitHub.
-    docs = ["README.md", "examples/README.md", "matlab-plot-skill/SKILL.md"]
+    docs = ["README.md", "CHANGELOG.md", "examples/README.md", f"{SKILL_DIR}/SKILL.md"]
+    docs += sorted(
+        str(path.relative_to(repo_root))
+        for path in (repo_root / SKILL_DIR / "references").glob("*.md")
+    )
     broken: list[str] = []
     link_pattern = re.compile(r"\]\((\.?/?[^)\s#]+)")
     for doc in docs:
@@ -129,6 +203,35 @@ def parse_openai_yaml(repo_root: Path) -> None:
     prompt = str(interface.get("default_prompt", ""))
     if "$matlab-plot-skill" not in prompt:
         raise SystemExit("openai.yaml default_prompt must mention $matlab-plot-skill.")
+
+
+def installer_env(tmp_path: Path) -> dict[str, str]:
+    # Point CODEX_HOME at the temp dir so the legacy-copy check never reads the
+    # developer's real ~/.codex.
+    env = dict(os.environ)
+    env["CODEX_HOME"] = str(tmp_path / "codex-home")
+    return env
+
+
+def check_legacy_warning(command: list[str], repo_root: Path, tmp_path: Path, label: str) -> None:
+    # With no legacy copy there must be no warning; with one, the installer must
+    # warn and leave it in place (it never deletes it).
+    quiet = subprocess.run(
+        command, cwd=repo_root, env=installer_env(tmp_path), capture_output=True, text=True
+    )
+    if quiet.returncode != 0 or "older copy" in quiet.stdout + quiet.stderr:
+        raise SystemExit(f"{label} installer warned about a legacy copy that does not exist.")
+
+    legacy = tmp_path / "codex-home" / "skills" / "matlab-plot-skill"
+    legacy.mkdir(parents=True)
+    warned = subprocess.run(
+        command, cwd=repo_root, env=installer_env(tmp_path), capture_output=True, text=True
+    )
+    if warned.returncode != 0 or "older copy" not in warned.stdout + warned.stderr:
+        raise SystemExit(f"{label} installer did not warn about the legacy Codex copy.")
+    if not legacy.exists():
+        raise SystemExit(f"{label} installer deleted the legacy Codex copy.")
+    legacy.rmdir()
 
 
 def run_powershell_install(repo_root: Path) -> None:
@@ -156,14 +259,18 @@ def run_powershell_install(repo_root: Path) -> None:
             str(claude_path),
             "-Force",
         ]
-        subprocess.run(command, check=True, cwd=repo_root)
+        subprocess.run(command, check=True, cwd=repo_root, env=installer_env(tmp_path))
         for path in [codex_path, claude_path]:
             installed = path / "matlab-plot-skill" / "SKILL.md"
             if not installed.exists():
                 raise SystemExit(f"PowerShell installer did not create {installed}")
 
+        check_legacy_warning(command, repo_root, tmp_path, "PowerShell")
+
         # Re-running without -Force must refuse to clobber an existing install.
-        rerun = subprocess.run(command[:-1], cwd=repo_root)
+        rerun = subprocess.run(
+            command[:-1], cwd=repo_root, env=installer_env(tmp_path), capture_output=True
+        )
         if rerun.returncode == 0:
             raise SystemExit(
                 "PowerShell installer overwrote an existing install without -Force."
@@ -200,14 +307,27 @@ def run_bash_install(repo_root: Path) -> None:
             str(claude_path),
             "--force",
         ]
-        subprocess.run(command, check=True, cwd=repo_root)
+        subprocess.run(command, check=True, cwd=repo_root, env=installer_env(tmp_path))
         for path in [codex_path, claude_path]:
             installed = path / "matlab-plot-skill" / "SKILL.md"
             if not installed.exists():
                 raise SystemExit(f"Bash installer did not create {installed}")
 
+        check_legacy_warning(command, repo_root, tmp_path, "Bash")
+
+        help_run = subprocess.run(
+            [bash, str(repo_root / "install.sh"), "--help"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+        if help_run.returncode != 0 or "Usage:" not in help_run.stdout:
+            raise SystemExit("Bash installer --help must print usage and exit 0.")
+
         # Re-running without --force must refuse to clobber an existing install.
-        rerun = subprocess.run(command[:-1], cwd=repo_root)
+        rerun = subprocess.run(
+            command[:-1], cwd=repo_root, env=installer_env(tmp_path), capture_output=True
+        )
         if rerun.returncode == 0:
             raise SystemExit(
                 "Bash installer overwrote an existing install without --force."
@@ -222,6 +342,7 @@ def main() -> None:
     repo_root = Path(args.repo_root).resolve()
     assert_exists(repo_root)
     parse_skill_front_matter(repo_root)
+    check_versions(repo_root)
     check_matlab_artifacts(repo_root)
     check_relative_links(repo_root)
     parse_openai_yaml(repo_root)
