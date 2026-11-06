@@ -4,4 +4,5 @@
 Thumbs.db
 __pycache__/
 .tmp/
-examples/output/*.pdf
+# Demo output (the README preview image lives in docs/).
+examples/output/

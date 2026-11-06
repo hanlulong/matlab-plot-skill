@@ -33,8 +33,9 @@ REQUIRED_FILES = [
     "matlab-plot-skill/scripts/export_publication_figure.m",
     "examples/README.md",
     "examples/demo_publication_figure.m",
-    # Committed hero image rendered at the top of README.md.
-    "examples/output/demo_publication_figure.png",
+    # Hero image rendered at the top of README.md (a copy of the demo's PNG;
+    # the demo itself writes to the git-ignored examples/output/).
+    "docs/demo_publication_figure.png",
     # MATLAB regression tests for the export helper (run when MATLAB exists).
     "tests/test_export_publication_figure.m",
     "evals/README.md",

@@ -4,7 +4,7 @@
 
 The key rule is simple: the agent must not stop after writing plotting code. It must generate the figure, export it, read the rendered figure itself, and iterate until the visual result is no longer a mess.
 
-![Demo figure](./examples/output/demo_publication_figure.png)
+![Demo figure](./docs/demo_publication_figure.png)
 
 ## Find This Repo If You Searched For
 
@@ -42,7 +42,7 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 - [`install.ps1`](./install.ps1)
 - [`install.sh`](./install.sh)
 - [`examples/demo_publication_figure.m`](./examples/demo_publication_figure.m)
-- [`examples/output/demo_publication_figure.png`](./examples/output/demo_publication_figure.png) (committed preview image)
+- [`docs/demo_publication_figure.png`](./docs/demo_publication_figure.png) (the preview image above, rendered by the demo)
 - [`tests/test_export_publication_figure.m`](./tests/test_export_publication_figure.m) (MATLAB unit tests for the helper)
 - [`evals/`](./evals/README.md) (trigger prompts and end-to-end quality checks)
 - [`tools/validate_repo.py`](./tools/validate_repo.py)
@@ -156,7 +156,7 @@ This generates:
 - `examples/output/demo_publication_figure.pdf`
 - `examples/output/demo_publication_figure.png`
 
-The PNG is there for fast review. The PDF is the publication-style export for the paper workflow. Only the PNG (used as the preview above) is committed; the vector PDF is git-ignored and produced locally when you run the demo.
+The PNG is there for fast review. The PDF is the publication-style export for the paper workflow. `examples/output/` is git-ignored, so running the demo never changes a tracked file; the preview image above is a copy kept in `docs/`.
 
 ## Validation
 
@@ -189,7 +189,7 @@ matlab -batch "assertSuccess(runtests('tests'))"
 ## Making Changes
 
 1. If you change the MATLAB code, lint it locally: `matlab -batch "checkcode('matlab-plot-skill/scripts/export_publication_figure.m')"` (and the demo), and run the unit tests above.
-2. If you change the demo or the helper, re-run the demo with MATLAB and re-commit `examples/output/demo_publication_figure.png` (the committed preview image).
+2. If you change the demo or the helper, re-run the demo with MATLAB, read the new PNG, then copy it over the preview image and commit it: `cp examples/output/demo_publication_figure.png docs/`.
 3. For a release, bump `metadata.version` in `SKILL.md` and `version` in `CITATION.cff`, and add a [`CHANGELOG.md`](./CHANGELOG.md) entry.
 4. Run the validator above before committing.
 
