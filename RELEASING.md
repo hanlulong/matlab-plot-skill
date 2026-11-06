@@ -19,6 +19,7 @@ Run the checks with a temporary `HOME` and client config, so no real installatio
 
 ```bash
 TMP="$(mktemp -d)"
+mkdir -p "$TMP/h" "$TMP/t" "$TMP/c"
 HOME="$TMP/h" TMPDIR="$TMP/t" uv run --with pyyaml python tools/validate_repo.py .
 CLAUDE_CONFIG_DIR="$TMP/c" claude plugin validate --strict .
 matlab -batch "assertSuccess(runtests('tests'))"
@@ -35,7 +36,7 @@ matlab -batch "assertSuccess(runtests('tests'))"
    git push origin matlab-plot-skill--vX.Y.Z
    ```
 
-4. Build the claude.ai upload zip and create the GitHub Release, using the changelog section as notes:
+4. Build the claude.ai upload zip and create the GitHub Release, using the changelog section as notes. On claude.ai the skill cannot run the MATLAB on your computer, so there it writes the code and gives you the exact `matlab -batch` command to run yourself; say so in the release notes, and point people to Claude Code or Codex for the render-review loop.
 
    ```bash
    git archive --format=zip --prefix=matlab-plot-skill/ \
@@ -44,4 +45,6 @@ matlab -batch "assertSuccess(runtests('tests'))"
      --title "matlab-plot-skill X.Y.Z" --notes-file <notes.md> --verify-tag
    ```
 
-5. Bump the `matlab-plot-skill` ref to `matlab-plot-skill--vX.Y.Z` in both marketplace files of OpenEconAI/plugins (`.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`), and sync the description if it changed.
+5. Bump the `matlab-plot-skill` ref to `matlab-plot-skill--vX.Y.Z` in both marketplace files of OpenEconAI/plugins (`.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`). Keep the catalog copies in sync, since its release tests compare them with this repo: the description (from the plugin manifests), the `displayName` (`interface.displayName` in [`.codex-plugin/plugin.json`](./.codex-plugin/plugin.json)), and the README's paste-to-agent prompt, which the catalog README copies verbatim under `### MATLAB Plot` and checks against this repo's default-branch README.
+
+The README's plugin install lines work only once the catalog lists the plugin. For a first listing, push the tag before the catalog pull request and merge the release into `main` right before the catalog pull request, so neither side points at something missing for long.
