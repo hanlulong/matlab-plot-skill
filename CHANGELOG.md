@@ -15,11 +15,14 @@ All notable changes to this project are documented here. The format follows [Kee
 - **The demo writes to the git-ignored `examples/output/`**, so running it no longer modifies a tracked file (which made a later `git pull` abort). The README explains how to recover an older clone.
 - The recommended Okabe-Ito line order puts the five colors with at least 3:1 contrast against white first and leaves yellow (1.3:1) out of the line order; the values are now the palette's exact RGB triplets.
 - SKILL.md tells the agent to run a script by name from the project root (`addpath('Plots'); make_figure`) instead of `run('Plots/make_figure.m')`, which changes folder and breaks project-relative paths such as `load('data/irf.mat')`.
+- SKILL.md tells the agent to copy the helper into the project next to the plotting script, and never to write the skill's install path into the user's `.m` file: plugin installs live in a version-numbered folder that is replaced on update, and coauthors or a replication package do not have it. A one-off render may put the skill's `scripts` folder on the path in the `matlab -batch` command instead. Step 3 now says that `exportgraphics` `Width`/`Height` should equal the figure's own size.
+- The Codex display name (`.codex-plugin/plugin.json` and `agents/openai.yaml`) is now "MATLAB Plot", the name the OpenEconAI catalog lists.
 
 ### Added
 
 - **Plugin packaging.** `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` (plugin name `matlab-plot-skill`, the same as the skill), so the skill can be installed from the OpenEconAI/plugins catalog: `/plugin install matlab-plot-skill@openeconai` in Claude Code, `codex plugin add matlab-plot-skill@openeconai` in Codex. The skill stays in `matlab-plot-skill/`. Releases are now tagged `matlab-plot-skill--vX.Y.Z`, the catalog's form; `RELEASING.md` lists the steps.
-- README sections on updating and uninstalling for plugin and clone installs.
+- README sections on updating and uninstalling for plugin and clone installs, including when changes take effect (`/reload-plugins` or a new session in Claude Code, a new session in Codex).
+- A paste-to-agent install prompt in the README, which the OpenEconAI catalog copies verbatim.
 - MATLAB-not-found guidance: the README shows how to put `matlab` on `PATH` on macOS, and SKILL.md tells the agent to look in the usual install folders before concluding MATLAB is missing.
 - Codex sandbox guidance: MATLAB cannot start inside Codex's macOS sandbox (on Apple Silicon it exits with "Incompatible processor ... neon"), so SKILL.md tells the agent to request escalated permissions for the `matlab` command.
 - The helper sets one font on every text object (`fontname`, R2022a+, with a `findall` fallback), so `text()` annotations and `xline`/`yline` labels no longer leave a second font in the PDF.
@@ -40,6 +43,11 @@ All notable changes to this project are documented here. The format follows [Kee
 - `TitleFontWeight` is validated case-insensitively (`"Bold"` used to be rejected), and an invalid value's error names the parameter.
 - The tiledlayout's shared X/Y labels now use `AxisFontSize` instead of staying larger than the axes text.
 - `install.ps1` stops on the first error (it could print "Installed" after a failed copy) and removes only the link when the destination is a symlink or junction.
+- **The installers no longer delete the clone they run from.** When the clone was made inside a skills folder (for example `~/.claude/skills/matlab-plot-skill`) or a skills path pointed at the repo root, `--force` (`-Force`) removed the destination, and with it the clone, `.git` and local edits included, before the copy failed. This dates from 0.1.0. Both installers now refuse such a destination, comparing physical paths, and check every destination before copying anything.
+- `install.ps1` compares physical paths when it looks for a legacy `~/.codex/skills` copy, so when `~/.codex/skills` is a link to `~/.agents/skills` it no longer reports the copy it just installed as an older one, with a removal command that would have deleted it.
+- The helper styles the labels on both sides of `yyaxis` axes (the inactive side kept MATLAB's larger default label size) and the z-axis label.
+- A string output path without a folder (`"s.pdf"`) no longer prints MATLAB's "An empty directory name was given" warning on every export. This dates from 0.1.0.
+- The guidance says that text with `Interpreter='latex'` always exports in Computer Modern, so a one-family `pdffonts` check does not lead the agent to strip LaTeX math labels.
 - Version requirements now say R2021a+ everywhere (the helper's `mustBeTextScalar` needs R2020b, and the name=value call syntax needs R2021a).
 - The Worked Recipe passes `HeightInches`, and the `<skill>` path placeholder is replaced by `${CLAUDE_SKILL_DIR}` with a Codex fallback.
 
