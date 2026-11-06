@@ -76,22 +76,21 @@ The page is then exactly that size and text prints within about 1% of its point 
 ## Color
 
 - Keep the number of colors low and map one concept to one color across the full figure.
-- Use a colorblind-safe categorical palette for line/marker series. The Okabe–Ito 8-color set is a good default (~8% of male readers have red–green deficiency):
+- Use a colorblind-safe categorical palette for line/marker series. The Okabe–Ito palette is a good default (~8% of male readers have red–green deficiency). For lines and markers on white, use this order, which puts the five colors with at least 3:1 contrast against white (the WCAG minimum for graphics) first and leaves out yellow (1.3:1, nearly invisible as a line):
 
   ```matlab
   okabeIto = [ ...
-      0.00 0.45 0.70;   % blue
-      0.90 0.62 0.00;   % orange
-      0.00 0.62 0.45;   % bluish green
-      0.80 0.47 0.65;   % reddish purple
-      0.95 0.90 0.25;   % yellow
-      0.34 0.71 0.91;   % sky blue
-      0.84 0.37 0.00;   % vermillion
-      0.00 0.00 0.00];  % black
+        0 114 178;   % blue
+      213  94   0;   % vermillion
+        0 158 115;   % bluish green
+      204 121 167;   % reddish purple
+        0   0   0;   % black
+      230 159   0;   % orange (2.3:1, pair with markers)
+       86 180 233] / 255;   % sky blue (2.3:1, pair with markers)
   set(groot, 'defaultAxesColorOrder', okabeIto);   % or per-axes: ax.ColorOrder = okabeIto
   ```
 
-  MATLAB's default blue/orange (`[0 0.447 0.741]` / `[0.85 0.325 0.098]`) is already reasonably colorblind-safe; red/green pairings are not.
+  Use Okabe–Ito yellow (`[240 228 66] / 255`) only for filled areas or bars, or give it a dark edge. MATLAB's default blue/orange (`[0 0.447 0.741]` / `[0.85 0.325 0.098]`) is already reasonably colorblind-safe; red/green pairings are not.
 - For continuous data (heatmaps, surfaces, `pcolor`), use a sequential built-in colormap: `parula` (the default) or `sky` (R2023a+, light to dark blue), or `gray` for print. `turbo` (R2020b+) is a smoother rainbow than `jet` for data that needs many distinct hues, but it is not perceptually uniform. Avoid `jet` and `hsv`. MATLAB has no built-in `viridis`, `cividis`, `magma`, or `plasma`: `colormap(viridis)` fails with "Unrecognized function or variable", so do not call them unless the project already defines them.
 - Make series distinguishable in grayscale too: pair color with marker shape or line style.
 
