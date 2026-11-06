@@ -55,6 +55,8 @@ export_publication_figure(fig, 'fig.pdf', WidthInches=3.49, HeightInches=2.6);
 \includegraphics[width=\linewidth]{fig.pdf}   % no scale factor
 ```
 
+`exportgraphics` crops to a thin margin around the content by default, so the PDF comes out slightly smaller than the figure (the repo's 6.5 x 5 in demo exports at about 6.2 x 4.9 in). Including it at `width=\linewidth` therefore scales it up by a few percent, which is harmless; include it at natural size (`\includegraphics{fig.pdf}`) when exact point sizes matter.
+
 ## Style Defaults
 
 - Start with line widths around `1.2` to `1.5`.
