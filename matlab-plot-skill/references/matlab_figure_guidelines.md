@@ -70,7 +70,7 @@ The page is then exactly that size and text prints within about 1% of its point 
 - Start with marker sizes around `6` to `8`.
 - Keep axis fonts and legend fonts readable after expected page scaling.
 - Use `Arial` rather than `Helvetica` for cross-platform consistency: Helvetica is effectively macOS-only and is silently substituted (usually by Arial) on Windows and Linux, which can change glyphs and metrics in the exported PDF.
-- Use one font for all text. Styling axes does not reach `text()` annotations or `xline`/`yline` labels, which keep MATLAB's default font and leave the PDF with mixed fonts. `fontname(fig, "Arial")` (R2022a+) sets every text object in the figure; on older releases use `set(findall(fig, '-property', 'FontName'), 'FontName', 'Arial')`. The helper does this.
+- Use one font for all text. Styling axes does not reach `text()` annotations or `xline`/`yline` labels, which keep MATLAB's default font and leave the PDF with mixed fonts. `fontname(fig, "Arial")` (R2022a+) sets every text object in the figure; on older releases use `set(findall(fig, '-property', 'FontName'), 'FontName', 'Arial')`. The helper does this. Text with `Interpreter='latex'` is the exception: MATLAB always typesets it in Computer Modern (`pdffonts` lists `mwa_cmr10`/`mwa_cmmi10`), which is expected for math labels. Use the `tex` interpreter (`'\pi_t'`) when a label should match the figure font.
 - Export light figures. From R2025a a figure follows the MATLAB desktop theme by default, so a dark desktop gives dark figures that export gray text on a black plot box. Call `theme(fig, "light")` before export; the helper does this. Under `matlab -batch` new figures are light.
 
 ## Color

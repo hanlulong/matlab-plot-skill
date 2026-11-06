@@ -80,7 +80,7 @@ Look for these in the rendered PNG; read [`references/matlab_figure_guidelines.m
 - Crowded ticks or a corner `1e4` multiplier → sparse explicit ticks; `ax.YAxis.Exponent = 0`.
 - Clipped titles or labels → loosen `TileSpacing`/`Padding` (in `tiledlayout`, or pass them to the helper).
 - Dark plot box with gray text (R2025a+ dark theme) → `theme(fig, "light")` before export; the helper does this.
-- Mixed fonts in the PDF from `text()` or `xline`/`yline` labels → `fontname(fig, "Arial")` (R2022a+); the helper does this.
+- Mixed fonts in the PDF from `text()` or `xline`/`yline` labels → `fontname(fig, "Arial")` (R2022a+); the helper does this. Labels with `Interpreter='latex'` always stay in Computer Modern; that is expected, so keep them.
 
 ## Decisions
 
