@@ -1,0 +1,41 @@
+{
+  "name": "matlab-plot-skill",
+  "version": "0.2.0",
+  "description": "Create, clean up, and export publication-quality MATLAB figures for papers, LaTeX or Overleaf, and Beamer slides: run MATLAB, read the rendered figure, and iterate until the layout is clean.",
+  "author": {
+    "name": "Lu Han",
+    "email": "hanlulong@gmail.com",
+    "url": "https://openecon.ai"
+  },
+  "homepage": "https://github.com/hanlulong/matlab-plot-skill",
+  "repository": "https://github.com/hanlulong/matlab-plot-skill",
+  "license": "MIT",
+  "keywords": [
+    "matlab",
+    "figures",
+    "publication-quality",
+    "latex",
+    "economics"
+  ],
+  "skills": "./matlab-plot-skill/",
+  "interface": {
+    "displayName": "Publication-Quality MATLAB Figures",
+    "shortDescription": "Create or fix MATLAB figures and export clean PDF plots",
+    "longDescription": "Build new MATLAB figures or clean up messy ones for papers, LaTeX or Overleaf, and Beamer slides. The agent runs MATLAB, exports a vector PDF plus a PNG preview, reads the rendered figure, and iterates until the layout is clean.",
+    "developerName": "Lu Han",
+    "category": "Education & Research",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/hanlulong/matlab-plot-skill",
+    "defaultPrompt": [
+      "Use matlab-plot-skill to clean up this MATLAB figure and export a vector PDF for my paper.",
+      "Use matlab-plot-skill to turn these subplots into a tiledlayout figure with one shared legend.",
+      "Use matlab-plot-skill to resize this MATLAB figure for a Beamer slide and check the rendered PNG."
+    ],
+    "brandColor": "#0072B2",
+    "screenshots": []
+  }
+}

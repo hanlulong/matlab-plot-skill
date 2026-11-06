@@ -1,0 +1,21 @@
+{
+  "name": "matlab-plot-skill",
+  "version": "0.2.0",
+  "description": "Create, clean up, and export publication-quality MATLAB figures for papers, LaTeX or Overleaf, and Beamer slides: run MATLAB, read the rendered figure, and iterate until the layout is clean.",
+  "author": {
+    "name": "Lu Han",
+    "email": "hanlulong@gmail.com",
+    "url": "https://openecon.ai"
+  },
+  "homepage": "https://github.com/hanlulong/matlab-plot-skill",
+  "repository": "https://github.com/hanlulong/matlab-plot-skill",
+  "license": "MIT",
+  "keywords": [
+    "matlab",
+    "figures",
+    "publication-quality",
+    "latex",
+    "economics"
+  ],
+  "skills": "./matlab-plot-skill/"
+}

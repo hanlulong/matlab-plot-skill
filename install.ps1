@@ -116,5 +116,5 @@ if ($Target -ne 'codex') {
     }
 }
 if ($Target -ne 'claude') {
-    Write-Host 'Restart Codex to load the skill.'
+    Write-Host 'Codex detects the new skill automatically; restart Codex if it does not appear.'
 }

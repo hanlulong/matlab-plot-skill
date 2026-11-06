@@ -43,5 +43,5 @@ All notable changes to this project are documented here. The format follows [Kee
 - Installers for macOS/Linux (`install.sh`) and Windows (`install.ps1`), targeting `~/.agents/skills` for Codex and `~/.claude/skills` for Claude Code.
 - A runnable demo with a committed preview image, and `tools/validate_repo.py`.
 
-[0.2.0]: https://github.com/hanlulong/matlab-plot-skill/compare/v0.1.0...v0.2.0
+[0.2.0]: https://github.com/hanlulong/matlab-plot-skill/compare/v0.1.0...matlab-plot-skill--v0.2.0
 [0.1.0]: https://github.com/hanlulong/matlab-plot-skill/releases/tag/v0.1.0

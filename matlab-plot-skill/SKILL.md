@@ -51,7 +51,7 @@ Do not stop after writing plotting code.
 
 ## Worked Recipe
 
-The full loop in one place — build, export both files, then read the PNG. `${CLAUDE_SKILL_DIR}` is the folder containing this SKILL.md; Claude Code fills it in. If it still appears literally (as in Codex), use the folder this file was loaded from, typically `~/.agents/skills/matlab-plot-skill`.
+The full loop in one place — build, export both files, then read the PNG. `${CLAUDE_SKILL_DIR}` is the folder containing this SKILL.md; Claude Code fills it in. If it still appears literally (as in Codex), use the folder this file was loaded from: typically `~/.agents/skills/matlab-plot-skill`, or a folder under `~/.codex/plugins/cache/` for a plugin install.
 
 ```matlab
 addpath(fullfile('${CLAUDE_SKILL_DIR}', 'scripts'));

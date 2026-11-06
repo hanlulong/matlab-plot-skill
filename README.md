@@ -39,6 +39,7 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 - [`matlab-plot-skill/references/render_review_checklist.md`](./matlab-plot-skill/references/render_review_checklist.md)
 - [`matlab-plot-skill/references/matlab_figure_guidelines.md`](./matlab-plot-skill/references/matlab_figure_guidelines.md)
 - [`matlab-plot-skill/agents/openai.yaml`](./matlab-plot-skill/agents/openai.yaml) (Codex UI metadata)
+- [`.claude-plugin/plugin.json`](./.claude-plugin/plugin.json) and [`.codex-plugin/plugin.json`](./.codex-plugin/plugin.json) (plugin manifests for the catalog install)
 - [`install.ps1`](./install.ps1)
 - [`install.sh`](./install.sh)
 - [`examples/demo_publication_figure.m`](./examples/demo_publication_figure.m)
@@ -46,7 +47,7 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 - [`tests/test_export_publication_figure.m`](./tests/test_export_publication_figure.m) (MATLAB unit tests for the helper)
 - [`evals/`](./evals/README.md) (trigger prompts and end-to-end quality checks)
 - [`tools/validate_repo.py`](./tools/validate_repo.py)
-- [`CHANGELOG.md`](./CHANGELOG.md), [`LICENSE`](./LICENSE), [`CITATION.cff`](./CITATION.cff)
+- [`CHANGELOG.md`](./CHANGELOG.md), [`RELEASING.md`](./RELEASING.md), [`LICENSE`](./LICENSE), [`CITATION.cff`](./CITATION.cff)
 
 ## Prerequisites
 
@@ -65,6 +66,28 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 
 ## Install
 
+Install the skill as a plugin from the [OpenEconAI plugin catalog](https://github.com/OpenEconAI/plugins), or copy it into your skills folders with the installers below. Pick one per client: with both, the skill loads twice.
+
+### As a plugin
+
+Claude Code:
+
+```text
+/plugin marketplace add OpenEconAI/plugins
+/plugin install matlab-plot-skill@openeconai
+```
+
+Codex:
+
+```bash
+codex plugin marketplace add OpenEconAI/plugins
+codex plugin add matlab-plot-skill@openeconai
+```
+
+Plugin skills are namespaced: invoke this one as `/matlab-plot-skill:matlab-plot-skill` in Claude Code or `$matlab-plot-skill:matlab-plot-skill` in Codex, or just describe the task.
+
+### From a clone
+
 Clone the repo first (the installers run from the clone):
 
 ```bash
@@ -72,7 +95,7 @@ git clone https://github.com/hanlulong/matlab-plot-skill.git
 cd matlab-plot-skill
 ```
 
-### Windows PowerShell
+#### Windows PowerShell
 
 Install into both Codex and Claude Code skill directories:
 
@@ -92,7 +115,7 @@ Overwrite an existing installed copy:
 .\install.ps1 -Force
 ```
 
-### macOS / Linux
+#### macOS / Linux
 
 ```bash
 ./install.sh
@@ -120,6 +143,31 @@ rm -rf ~/.codex/skills/matlab-plot-skill
 ```
 
 On Windows, use `Remove-Item -LiteralPath "$HOME\.codex\skills\matlab-plot-skill" -Recurse -Force`, unless that path is a symlink or junction to a clone: then remove only the link with `(Get-Item -LiteralPath "$HOME\.codex\skills\matlab-plot-skill" -Force).Delete()` (`install.ps1` prints the right command for your case).
+
+## Update
+
+- Plugin, Claude Code: `claude plugin marketplace update openeconai`, then `claude plugin update matlab-plot-skill@openeconai`.
+- Plugin, Codex: `codex plugin marketplace upgrade openeconai`, then `codex plugin add matlab-plot-skill@openeconai`.
+- Clone install: pull the repo and re-run the installer with `--force` (`-Force` on PowerShell), since the installer copies the skill:
+
+  ```bash
+  cd matlab-plot-skill
+  git pull
+  ./install.sh --force
+  ```
+
+  If `git pull` stops with "Your local changes ... would be overwritten" for `examples/output/demo_publication_figure.png`, you ran the demo before 0.2.0, which wrote into that tracked file. Discard the local render with `git checkout -- examples/output` and pull again; the demo now writes only to git-ignored files.
+
+## Uninstall
+
+- Plugin: `claude plugin uninstall matlab-plot-skill@openeconai` in Claude Code, or `codex plugin remove matlab-plot-skill@openeconai` in Codex.
+- Clone install: delete the copied folders (the last one exists only if you installed before 2026-05-30):
+
+  ```bash
+  rm -rf ~/.claude/skills/matlab-plot-skill ~/.agents/skills/matlab-plot-skill ~/.codex/skills/matlab-plot-skill
+  ```
+
+  On Windows, remove `$HOME\.claude\skills\matlab-plot-skill` and `$HOME\.agents\skills\matlab-plot-skill` the same way as the legacy copy above. Then start a new Claude Code session and restart Codex so neither lists the skill.
 
 ## Example Invocation
 
@@ -170,11 +218,12 @@ uv run --with pyyaml python tools/validate_repo.py .
 
 This checks:
 
-- required skill packaging files, including the committed demo PNG
+- required skill packaging files, including the README preview image in `docs/`
 - `SKILL.md` front matter against the Agent Skills rules and Codex's allowed keys, and that the body still expresses the render-review-iterate workflow
-- the version in `SKILL.md` metadata matches `CITATION.cff` and has a `CHANGELOG.md` entry
+- the version in `SKILL.md` metadata matches `CITATION.cff` and both plugin manifests, and has a dated `CHANGELOG.md` entry whose compare link ends at the `matlab-plot-skill--vX.Y.Z` tag
+- both plugin manifests parse, name the skill, and point at the folder that holds `SKILL.md`
 - the export helper still uses `exportgraphics` vector output, and the demo still calls that helper
-- relative markdown links resolve (README, CHANGELOG, SKILL.md, and the reference files)
+- relative markdown links resolve (README, CHANGELOG, RELEASING, SKILL.md, and the reference files)
 - `openai.yaml` skill metadata
 - `evals/trigger-evals.json` parses and has both should-trigger and should-not-trigger prompts
 - PowerShell install flow (when PowerShell is available), including the legacy-copy warning
@@ -190,7 +239,7 @@ matlab -batch "assertSuccess(runtests('tests'))"
 
 1. If you change the MATLAB code, lint it locally: `matlab -batch "checkcode('matlab-plot-skill/scripts/export_publication_figure.m')"` (and the demo), and run the unit tests above.
 2. If you change the demo or the helper, re-run the demo with MATLAB, read the new PNG, then copy it over the preview image and commit it: `cp examples/output/demo_publication_figure.png docs/`.
-3. For a release, bump `metadata.version` in `SKILL.md` and `version` in `CITATION.cff`, and add a [`CHANGELOG.md`](./CHANGELOG.md) entry.
+3. For a release, follow [`RELEASING.md`](./RELEASING.md): bump the version in `SKILL.md`, both plugin manifests, and `CITATION.cff`, add a [`CHANGELOG.md`](./CHANGELOG.md) entry, and tag `matlab-plot-skill--vX.Y.Z`.
 4. Run the validator above before committing.
 
 ## Notes
@@ -198,5 +247,5 @@ matlab -batch "assertSuccess(runtests('tests'))"
 - Codex reads [`agents/openai.yaml`](./matlab-plot-skill/agents/openai.yaml) for optional UI metadata.
 - Claude Code can use the same `SKILL.md`-based folder structure.
 - The installer copies the skill, so re-run it with `--force` (`-Force` on PowerShell) after you update the repo to refresh the installed copy.
-- Claude Code picks up new and changed skills in `~/.claude/skills` without a restart. If `~/.claude/skills` did not exist when your session started, run `/reload-skills` to load the skill, and again after each later change there, until you start a new session. Restart Codex after installing so it loads the skill.
+- Claude Code picks up new and changed skills in `~/.claude/skills` without a restart. If `~/.claude/skills` did not exist when your session started, run `/reload-skills` to load the skill, and again after each later change there, until you start a new session. Codex detects newly installed skills automatically; restart Codex if the skill does not appear.
 - See [`CHANGELOG.md`](./CHANGELOG.md) for what changed in each version. Version 0.2.0 changed the helper's defaults: it now keeps your figure size and layout spacing unless you pass `WidthInches`/`HeightInches` or `TileSpacing`/`LayoutPadding`. A script that passes only `WidthInches` to a plain `figure` now keeps MATLAB's default height (about 6 in under `matlab -batch`) instead of 4 in; the helper warns (`export_publication_figure:defaultSize`), and passing `HeightInches=4` restores the 0.1.0 output.

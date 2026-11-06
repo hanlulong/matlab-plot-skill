@@ -42,7 +42,13 @@ REQUIRED_FILES = [
     "evals/trigger-evals.json",
     # Dev dependency manifest referenced by the README pip path.
     "requirements-dev.txt",
+    # Plugin manifests for the Claude Code and Codex plugin installs.
+    ".claude-plugin/plugin.json",
+    ".codex-plugin/plugin.json",
+    "RELEASING.md",
 ]
+
+PLUGIN_MANIFESTS = [".claude-plugin/plugin.json", ".codex-plugin/plugin.json"]
 
 
 def assert_exists(repo_root: Path) -> None:
@@ -141,19 +147,66 @@ def check_front_matter_spec(front_matter: dict) -> None:
 def check_versions(repo_root: Path) -> None:
     # Keep the release version in sync across SKILL.md, CITATION.cff, and the
     # CHANGELOG so a release cannot ship with mismatched numbers.
-    skill_text = (repo_root / SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
-    front_matter = yaml.safe_load(skill_text.split("---\n", 2)[1]) or {}
-    skill_version = str((front_matter.get("metadata") or {}).get("version", ""))
+    version = skill_version(repo_root)
     citation = yaml.safe_load((repo_root / "CITATION.cff").read_text(encoding="utf-8"))
     citation_version = str(citation.get("version", ""))
-    if not skill_version or skill_version != citation_version:
+    if not version or version != citation_version:
         raise SystemExit(
-            f"Version mismatch: SKILL.md metadata.version={skill_version!r}, "
+            f"Version mismatch: SKILL.md metadata.version={version!r}, "
             f"CITATION.cff version={citation_version!r}."
         )
     changelog = (repo_root / "CHANGELOG.md").read_text(encoding="utf-8")
-    if not re.search(rf"^## \[?{re.escape(skill_version)}\]?", changelog, re.MULTILINE):
-        raise SystemExit(f"CHANGELOG.md has no entry for version {skill_version}.")
+    # A dated heading, so a release cannot ship an "Unreleased" entry.
+    if not re.search(
+        rf"^## \[{re.escape(version)}\] - \d{{4}}-\d{{2}}-\d{{2}}$", changelog, re.MULTILINE
+    ):
+        raise SystemExit(f"CHANGELOG.md has no dated '## [{version}] - YYYY-MM-DD' entry.")
+    tag = f"{SKILL_DIR}--v{version}"
+    if f"...{tag}" not in changelog:
+        raise SystemExit(f"CHANGELOG.md compare link must end at the release tag {tag}.")
+
+
+def skill_version(repo_root: Path) -> str:
+    skill_text = (repo_root / SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
+    front_matter = yaml.safe_load(skill_text.split("---\n", 2)[1]) or {}
+    return str((front_matter.get("metadata") or {}).get("version", ""))
+
+
+def check_plugin_manifests(repo_root: Path) -> None:
+    # Both plugin manifests must name the skill, carry the release version, and
+    # point at the folder that holds SKILL.md, or a plugin install would load an
+    # old version or no skill at all.
+    version = skill_version(repo_root)
+    for manifest_path in PLUGIN_MANIFESTS:
+        try:
+            manifest = json.loads((repo_root / manifest_path).read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise SystemExit(f"{manifest_path} is not valid JSON: {exc}") from None
+        if manifest.get("name") != SKILL_DIR:
+            raise SystemExit(f"{manifest_path} name must be {SKILL_DIR!r}.")
+        if manifest.get("version") != version:
+            raise SystemExit(
+                f"{manifest_path} version {manifest.get('version')!r} does not match "
+                f"SKILL.md metadata.version {version!r}."
+            )
+        if manifest.get("license") != "MIT":
+            raise SystemExit(f"{manifest_path} license must be 'MIT'.")
+        skills = manifest.get("skills")
+        if not isinstance(skills, str) or not skills.startswith("./"):
+            raise SystemExit(f"{manifest_path} skills must be a './'-relative path.")
+        if not (repo_root / skills / "SKILL.md").is_file():
+            raise SystemExit(f"{manifest_path} skills path {skills!r} has no SKILL.md.")
+    interface = json.loads(
+        (repo_root / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8")
+    ).get("interface", {})
+    prompts = interface.get("defaultPrompt", [])
+    if not isinstance(prompts, list) or len(prompts) > 3 or any(
+        not isinstance(prompt, str) or len(prompt) > 128 for prompt in prompts
+    ):
+        raise SystemExit(
+            ".codex-plugin/plugin.json interface.defaultPrompt must be at most 3 strings "
+            "of at most 128 characters."
+        )
 
 
 def check_trigger_evals(repo_root: Path) -> None:
@@ -205,6 +258,7 @@ def check_relative_links(repo_root: Path) -> None:
         "examples/README.md",
         "evals/README.md",
         f"{SKILL_DIR}/SKILL.md",
+        "RELEASING.md",
     ]
     docs += sorted(
         str(path.relative_to(repo_root))
@@ -371,6 +425,7 @@ def main() -> None:
     assert_exists(repo_root)
     parse_skill_front_matter(repo_root)
     check_versions(repo_root)
+    check_plugin_manifests(repo_root)
     check_trigger_evals(repo_root)
     check_matlab_artifacts(repo_root)
     check_relative_links(repo_root)

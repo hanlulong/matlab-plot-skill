@@ -149,5 +149,5 @@ if [[ "${target}" != "codex" ]]; then
   claude_message
 fi
 if [[ "${target}" != "claude" ]]; then
-  echo "Restart Codex to load the skill."
+  echo "Codex detects the new skill automatically; restart Codex if it does not appear."
 fi
