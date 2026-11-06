@@ -81,27 +81,39 @@ check_destination() {
   # Refuse when the destination is this clone or holds it (for example a clone
   # made directly in ~/.claude/skills/matlab-plot-skill, or --codex-path set to
   # the repo root): replacing it would delete the clone, .git and local edits
-  # included. Compare physical paths so symlinked folders are caught too. A
+  # included. Folders are compared by identity (-ef: same device and inode),
+  # not by spelling, because macOS file systems ignore case and Unicode
+  # normalization by default: a clone in .../MATLAB-plot-skill is the same
+  # folder as .../matlab-plot-skill. Symlinked folders are caught too. A
   # destination that is itself a symlink is not followed: --force removes only
   # the link.
-  local destination_real repo_real
+  local destination_real repo_real skill_source p
   destination_real="$(cd "${destination_root}" && pwd -P)/matlab-plot-skill"
   repo_real="$(cd "${repo_root}" && pwd -P)"
+  skill_source="${repo_real}/matlab-plot-skill"
   if [[ ! -L "${destination}" ]]; then
-    case "${repo_real}/" in
-      "${destination_real}/"*)
+    # The destination is this clone or one of its parent folders.
+    p="${repo_real}"
+    while :; do
+      if [[ "${p}" -ef "${destination}" ]]; then
         echo "Refusing to install into ${destination}: that folder holds this clone (${repo_real}), and replacing it would delete the clone." >&2
         echo "Clone the repo outside your skills folders (for example ~/src/matlab-plot-skill) and run the installer from there." >&2
         exit 1
-        ;;
-    esac
-    case "${destination_real}/" in
-      "${repo_real}/matlab-plot-skill/"*)
-        echo "Refusing to install into ${destination}: that is this clone's own skill folder (${repo_real}/matlab-plot-skill) or a folder inside it." >&2
+      fi
+      [[ "${p}" == "/" ]] && break
+      p="$(dirname "${p}")"
+    done
+    # The destination is this clone's own skill folder or a folder inside it.
+    p="${destination_real}"
+    while :; do
+      if [[ "${p}" -ef "${skill_source}" ]]; then
+        echo "Refusing to install into ${destination}: that is this clone's own skill folder (${skill_source}) or a folder inside it." >&2
         echo "Pick a skills directory outside the clone." >&2
         exit 1
-        ;;
-    esac
+      fi
+      [[ "${p}" == "/" ]] && break
+      p="$(dirname "${p}")"
+    done
   fi
 }
 

@@ -380,6 +380,34 @@ def check_refuses_own_clone(
         if not keep.exists() or not (clone / SKILL_DIR / "SKILL.md").exists():
             raise SystemExit(f"{label} installer deleted the clone it was run from.")
 
+    # On a case-insensitive file system (the macOS default) a clone in a folder
+    # spelled in a different case is the same folder as the destination.
+    case_skills = tmp_path / "self-skills-case"
+    case_clone = case_skills / "MATLAB-Plot-Skill"
+    case_clone.mkdir(parents=True)
+    if not (case_skills / "matlab-plot-skill").exists():
+        print(f"Skipping {label} case-variant clone check: the file system is case-sensitive.")
+        return
+    for name in ("install.sh", "install.ps1"):
+        shutil.copy2(repo_root / name, case_clone / name)
+    shutil.copytree(repo_root / SKILL_DIR, case_clone / SKILL_DIR)
+    case_keep = case_clone / "KEEP.txt"
+    case_keep.write_text("local edits\n", encoding="utf-8")
+    result = subprocess.run(
+        make_command(case_clone, case_skills, "claude"),
+        cwd=case_clone,
+        env=installer_env(tmp_path),
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0 or "Refusing to install" not in result.stdout + result.stderr:
+        raise SystemExit(
+            f"{label} installer did not refuse to install over its own clone when the "
+            "clone folder name differs only in case."
+        )
+    if not case_keep.exists() or not (case_clone / SKILL_DIR / "SKILL.md").exists():
+        raise SystemExit(f"{label} installer deleted a clone whose folder name differs only in case.")
+
 
 def check_linked_legacy_root(
     make_command: Callable[[Path], list[str]], repo_root: Path, tmp_path: Path, label: str
