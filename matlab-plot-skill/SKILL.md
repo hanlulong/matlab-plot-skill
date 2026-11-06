@@ -1,29 +1,34 @@
 ---
 name: matlab-plot-skill
-description: "Use this skill when MATLAB figures look messy: cramped subplots, unreadable titles, awkward legends, bad page fit, or broken PDF output for LaTeX or Overleaf. It turns rough MATLAB plots into publication-quality figures by exporting the figure, reading the rendered figure, and iterating on the layout until it looks clean."
+description: "Creates, cleans up, and exports publication-quality MATLAB figures for papers, LaTeX or Overleaf documents, and Beamer slides. Use when writing or fixing MATLAB plotting code (plot, tiledlayout, subplot, exportgraphics, print, saveas) or when a MATLAB figure looks messy: cramped panels, unreadable titles or fonts, awkward legends, bad fit at the column or text width, or broken PDF output. Runs MATLAB headlessly, exports a vector PDF plus a PNG preview, reads the rendered figure, and iterates until the layout is clean. Not for matplotlib, R, Stata, or Excel charts."
+license: MIT
+metadata:
+  version: "0.2.0"
 ---
 
 # MATLAB Plot Skill
 
 ## Overview
 
-Use this skill to fix messy MATLAB figures and turn rough plots into publication-quality output. The workflow is: read the plotting code and destination document, refactor the figure, export a vector PDF plus a PNG preview, **read the rendered PNG yourself**, critique it, and iterate until the result is clearly professional.
+Use this skill to build new MATLAB figures or fix messy ones, and turn rough plots into publication-quality output. The workflow is: read the plotting code and destination document, refactor the figure, export a vector PDF plus a PNG preview, **read the rendered PNG yourself**, critique it, and iterate until the result is clearly professional.
 
 The non-negotiable idea: do not stop after writing plotting code. Code that looks correct is not the same as a figure that looks correct — you must generate, export, look, and iterate.
 
 ## When To Use It
 
-- MATLAB `.m` files that create or export figures.
+- MATLAB `.m` files that create or export figures (new figures as well as existing ones).
 - Figures that look cramped, blurry, inconsistent, or amateurish.
 - Multi-panel paper figures where spacing, legends, titles, and page fit matter.
-- Overleaf or LaTeX workflows that need vector PDF output.
+- Overleaf or LaTeX workflows that need vector PDF output, including figures for Beamer slides.
 - Requests like `publication-quality`, `journal-ready`, `clean up this figure`, `make this plot readable`, or anything that effectively means "this MATLAB figure looks messy."
+
+Requires MATLAB R2021a+ (run headlessly with `matlab -batch`). Optional: `pdftoppm` (Poppler) or ImageMagick to rasterize a PDF for reading.
 
 ## Non-Negotiable Review Loop
 
 Do not stop after writing plotting code.
 
-1. **Read** the plotting script and the destination file (`.tex`, `.md`, slide deck) that will include the figure. Decide the figure's final printed width first: look in the `.tex` for `\columnwidth` (single column, ~3.3 in) vs `\textwidth` (~6.5 in), and size fonts for that width.
+1. **Read** the plotting script and the destination file (`.tex`, `.md`, slide deck) that will include the figure. Decide the figure's final printed width first. Find the width the document includes it at (`\linewidth`, `\columnwidth`, `\textwidth`, or a fraction such as `0.8\textwidth`). In a one-column document `\columnwidth` equals `\textwidth` (345 pt = 4.77 in for the default 10 pt `article`; 6.5 in with 1-in margins on letter paper); only two-column classes have a narrow column of about 3.2–3.5 in. When unsure, measure it: put `\typeout{\the\linewidth}` inside the figure environment, compile, and divide the logged points by 72.27 (see [Sizing And Page Fit](./references/matlab_figure_guidelines.md#sizing-and-page-fit)). Export at that width and size fonts for it.
 2. **Generate** the figure by running MATLAB headlessly, and lint any script you write:
    ```bash
    matlab -batch "checkcode('make_figure.m'); run('make_figure.m')"
@@ -44,10 +49,10 @@ Do not stop after writing plotting code.
 
 ## Worked Recipe
 
-The full loop in one place — build, export both files, then read the PNG:
+The full loop in one place — build, export both files, then read the PNG. `${CLAUDE_SKILL_DIR}` is the folder containing this SKILL.md; Claude Code fills it in. If it still appears literally (as in Codex), use the folder this file was loaded from, typically `~/.agents/skills/matlab-plot-skill`.
 
 ```matlab
-addpath('<skill>/scripts');   % e.g. ~/.claude/skills/matlab-plot-skill/scripts
+addpath(fullfile('${CLAUDE_SKILL_DIR}', 'scripts'));
 
 fig = figure;
 tl = tiledlayout(fig, 2, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
@@ -56,32 +61,34 @@ nexttile; plot(x, y2); title('Panel B');
 % ... remaining panels, one shared legend ...
 
 export_publication_figure(fig, 'out/figure.pdf', ...
-    WidthInches=6.5, PreviewPath='out/figure.png');
+    WidthInches=6.5, HeightInches=4.5, PreviewPath='out/figure.png');
 ```
 
-Then **read `out/figure.png`** and iterate. (If you would rather not depend on the helper, the two `exportgraphics` lines in step 3 do the same export inline.)
+Then **read `out/figure.png`** and iterate. The helper resizes the figure only to the `WidthInches`/`HeightInches` you pass (otherwise it keeps the current size) and keeps each layout's `TileSpacing`/`Padding` unless you pass `TileSpacing=`/`LayoutPadding=`, so make size and spacing changes there or in the `tiledlayout` call. (If you would rather not depend on the helper, the two `exportgraphics` lines in step 3 do the same export inline.)
 
 ## Common Defects → Fix
 
 Look for these in the rendered PNG; read [`references/matlab_figure_guidelines.md`](./references/matlab_figure_guidelines.md) for the full rules and rationale before styling.
 
-- Cramped panels → increase canvas height before shrinking fonts.
-- Tiny text after `\columnwidth` scaling → export at the final width so LaTeX needs no scaling.
+- Cramped panels → increase `HeightInches` before shrinking fonts.
+- Tiny text after LaTeX scaling → export at the final include width so LaTeX needs no scaling.
 - Legend stealing plot area → one shared legend docked outside the tiles (`lgd.Layout.Tile = 'south'`).
 - Thin lines / small markers after scaling → raise line width and marker size.
-- Crowded or rainbow colors → one concept per color, colorblind-safe palette; `parula`/`viridis` (not `jet`) for continuous data.
+- Crowded or rainbow colors → one concept per color, colorblind-safe palette; `parula` (default) or `sky` (R2023a+) for continuous data, not `jet`. MATLAB has no built-in `viridis` or `cividis`.
 - Crowded ticks or a corner `1e4` multiplier → sparse explicit ticks; `ax.YAxis.Exponent = 0`.
-- Clipped titles or labels → loosen `TileSpacing`/`Padding`.
+- Clipped titles or labels → loosen `TileSpacing`/`Padding` (in `tiledlayout`, or pass them to the helper).
+- Dark plot box with gray text (R2025a+ dark theme) → `theme(fig, "light")` before export; the helper does this.
+- Mixed fonts in the PDF from `text()` or `xline`/`yline` labels → `fontname(fig, "Arial")` (R2022a+); the helper does this.
 
 ## Decisions
 
 - Refactor an existing `.m` in place: preserve the data and computation, change only styling and layout.
 - Move `subplot` to `tiledlayout` unless rewriting would risk the user's intent on code they want minimally touched.
-- Default to vector PDF; rasterize (`exportgraphics(ax, ..., 'ContentType', 'image')` at 300–600 DPI) only when one layer has many thousands of primitives and the vector PDF becomes huge or slow to compile.
+- Default to vector PDF. If a layer has many thousands of primitives and the PDF becomes huge or slow to compile, first cut the primitive count (`imagesc` instead of `pcolor` or a flat `surf`, `binscatter` instead of a dense `scatter`), which keeps all text vector. `ContentType='image'` rasterizes everything in that export, text included, so otherwise export the heavy panel alone as an image and assemble the panels in LaTeX, or export the whole figure as an image at 300–600 DPI.
 
 ## Helper
 
-[`scripts/export_publication_figure.m`](./scripts/export_publication_figure.m) applies explicit sizing, readable defaults, and the vector-PDF + PNG-preview export. Copy it into the project, or add its folder to the MATLAB path (`addpath('<skill>/scripts')`) before calling it, as in the recipe above.
+[`scripts/export_publication_figure.m`](./scripts/export_publication_figure.m) applies the final size you pass, readable font and line defaults, one font across all text, and the vector-PDF + PNG-preview export. Copy it into the project, or add its folder to the MATLAB path (`addpath(fullfile('${CLAUDE_SKILL_DIR}', 'scripts'))`) before calling it, as in the recipe above.
 
 ## Report Back
 
