@@ -110,6 +110,8 @@ If you installed this skill before 2026-05-30 (when the installers still targete
 rm -rf ~/.codex/skills/matlab-plot-skill
 ```
 
+On Windows, use `Remove-Item -LiteralPath "$HOME\.codex\skills\matlab-plot-skill" -Recurse -Force`, unless that path is a symlink or junction to a clone: then remove only the link with `(Get-Item -LiteralPath "$HOME\.codex\skills\matlab-plot-skill" -Force).Delete()` (`install.ps1` prints the right command for your case).
+
 ## Example Invocation
 
 In Claude Code, invoke the skill directly with `/matlab-plot-skill`, or just describe the task; Claude loads the skill when the request matches its description:

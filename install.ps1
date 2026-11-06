@@ -67,7 +67,8 @@ function Test-LegacyCodexCopy {
     $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME '.codex' }
     $legacyRoot = Join-Path $codexHome 'skills'
     $legacy = Join-Path $legacyRoot 'matlab-plot-skill'
-    if (-not (Get-Item -LiteralPath $legacy -Force -ErrorAction SilentlyContinue)) {
+    $legacyItem = Get-Item -LiteralPath $legacy -Force -ErrorAction SilentlyContinue
+    if (-not $legacyItem) {
         return
     }
     $installedRoot = (Resolve-Path -LiteralPath $CodexSkillsPath).ProviderPath.TrimEnd('\', '/')
@@ -77,7 +78,15 @@ function Test-LegacyCodexCopy {
     }
     Write-Warning "An older copy of matlab-plot-skill is still installed at $legacy."
     Write-Warning 'Codex also loads skills from that deprecated location and will list the skill twice.'
-    Write-Warning "Remove the old copy with: Remove-Item -LiteralPath '$legacy' -Recurse -Force"
+    if ($legacyItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+        # A symlink or junction (e.g. to a clone): suggest removing only the link,
+        # since Remove-Item -Recurse on a link can delete the target's contents
+        # in Windows PowerShell 5.1.
+        Write-Warning "It is a link; remove only the link with: (Get-Item -LiteralPath '$legacy' -Force).Delete()"
+    }
+    else {
+        Write-Warning "Remove the old copy with: Remove-Item -LiteralPath '$legacy' -Recurse -Force"
+    }
 }
 
 # Claude Code watches skill directories that existed when a session started;
