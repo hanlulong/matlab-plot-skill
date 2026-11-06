@@ -88,7 +88,7 @@ Plugin skills are namespaced: invoke this one as `/matlab-plot-skill:matlab-plot
 
 ### From a clone
 
-Clone the repo first (the installers run from the clone):
+Clone the repo first, somewhere outside your skills folders (for example `~/src`), since the installers copy the skill out of the clone. They refuse to install into a folder that holds the clone itself, such as a clone made directly in `~/.claude/skills/matlab-plot-skill`:
 
 ```bash
 git clone https://github.com/hanlulong/matlab-plot-skill.git
@@ -226,8 +226,8 @@ This checks:
 - relative markdown links resolve (README, CHANGELOG, RELEASING, SKILL.md, and the reference files)
 - `openai.yaml` skill metadata
 - `evals/trigger-evals.json` parses and has both should-trigger and should-not-trigger prompts
-- PowerShell install flow (when PowerShell is available), including the legacy-copy warning
-- bash install flow (when bash is available), including `--help` and the legacy-copy warning
+- PowerShell install flow (when PowerShell is available), including the legacy-copy warning, and the refusal to install over the clone itself
+- bash install flow (when bash is available), including `--help`, the legacy-copy warning, and the refusal to install over the clone itself
 
 With MATLAB installed, also run the helper's unit tests from the repository root:
 

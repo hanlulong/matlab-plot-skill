@@ -72,6 +72,39 @@ if [[ ! -d "${skill_source}" ]]; then
   exit 1
 fi
 
+check_destination() {
+  local destination_root="$1"
+  local destination="${destination_root}/matlab-plot-skill"
+
+  mkdir -p "${destination_root}"
+
+  # Refuse when the destination is this clone or holds it (for example a clone
+  # made directly in ~/.claude/skills/matlab-plot-skill, or --codex-path set to
+  # the repo root): replacing it would delete the clone, .git and local edits
+  # included. Compare physical paths so symlinked folders are caught too. A
+  # destination that is itself a symlink is not followed: --force removes only
+  # the link.
+  local destination_real repo_real
+  destination_real="$(cd "${destination_root}" && pwd -P)/matlab-plot-skill"
+  repo_real="$(cd "${repo_root}" && pwd -P)"
+  if [[ ! -L "${destination}" ]]; then
+    case "${repo_real}/" in
+      "${destination_real}/"*)
+        echo "Refusing to install into ${destination}: that folder holds this clone (${repo_real}), and replacing it would delete the clone." >&2
+        echo "Clone the repo outside your skills folders (for example ~/src/matlab-plot-skill) and run the installer from there." >&2
+        exit 1
+        ;;
+    esac
+    case "${destination_real}/" in
+      "${repo_real}/matlab-plot-skill/"*)
+        echo "Refusing to install into ${destination}: that is this clone's own skill folder (${repo_real}/matlab-plot-skill) or a folder inside it." >&2
+        echo "Pick a skills directory outside the clone." >&2
+        exit 1
+        ;;
+    esac
+  fi
+}
+
 install_skill() {
   local destination_root="$1"
   local destination="${destination_root}/matlab-plot-skill"
@@ -125,6 +158,17 @@ claude_message() {
     echo "Claude Code: ${claude_skills_path} was just created, so run /reload-skills in any open session (new sessions load it automatically)."
   fi
 }
+
+# Check every destination before copying anything, so a refused destination
+# never leaves a half-finished install behind.
+case "${target}" in
+  codex) check_destination "${codex_skills_path}" ;;
+  claude) check_destination "${claude_skills_path}" ;;
+  both)
+    check_destination "${codex_skills_path}"
+    check_destination "${claude_skills_path}"
+    ;;
+esac
 
 case "${target}" in
   codex)

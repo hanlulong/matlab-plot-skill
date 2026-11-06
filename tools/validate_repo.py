@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import Callable
 
 import yaml
 
@@ -316,6 +317,40 @@ def check_legacy_warning(command: list[str], repo_root: Path, tmp_path: Path, la
     legacy.rmdir()
 
 
+def check_refuses_own_clone(
+    make_command: Callable[[Path, Path, str], list[str]],
+    repo_root: Path,
+    tmp_path: Path,
+    label: str,
+) -> None:
+    # A clone made inside a skills folder (or a skills path set to the clone)
+    # must never be replaced by its own installer: with --force that would
+    # delete the clone, .git and local edits included.
+    skills = tmp_path / "self-skills"
+    clone = skills / "matlab-plot-skill"
+    clone.mkdir(parents=True)
+    for name in ("install.sh", "install.ps1"):
+        shutil.copy2(repo_root / name, clone / name)
+    shutil.copytree(repo_root / SKILL_DIR, clone / SKILL_DIR)
+    keep = clone / "KEEP.txt"
+    keep.write_text("local edits\n", encoding="utf-8")
+    for destination_root, target in [(skills, "claude"), (clone, "codex")]:
+        result = subprocess.run(
+            make_command(clone, destination_root, target),
+            cwd=clone,
+            env=installer_env(tmp_path),
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0 or "Refusing to install" not in result.stdout + result.stderr:
+            raise SystemExit(
+                f"{label} installer did not refuse to install over its own clone "
+                f"({destination_root})."
+            )
+        if not keep.exists() or not (clone / SKILL_DIR / "SKILL.md").exists():
+            raise SystemExit(f"{label} installer deleted the clone it was run from.")
+
+
 def run_powershell_install(repo_root: Path) -> None:
     if shutil.which("pwsh") is None and shutil.which("powershell") is None:
         print("Skipping PowerShell installer test: PowerShell not found.")
@@ -357,6 +392,16 @@ def run_powershell_install(repo_root: Path) -> None:
             raise SystemExit(
                 "PowerShell installer overwrote an existing install without -Force."
             )
+
+        def ps_command(script_dir: Path, destination_root: Path, target: str) -> list[str]:
+            flag = "-ClaudeSkillsPath" if target == "claude" else "-CodexSkillsPath"
+            return [
+                shell, "-NoProfile", "-ExecutionPolicy", "Bypass",
+                "-File", str(script_dir / "install.ps1"),
+                "-Target", target, flag, str(destination_root), "-Force",
+            ]
+
+        check_refuses_own_clone(ps_command, repo_root, tmp_path, "PowerShell")
 
 
 def run_bash_install(repo_root: Path) -> None:
@@ -414,6 +459,15 @@ def run_bash_install(repo_root: Path) -> None:
             raise SystemExit(
                 "Bash installer overwrote an existing install without --force."
             )
+
+        def sh_command(script_dir: Path, destination_root: Path, target: str) -> list[str]:
+            flag = "--claude-path" if target == "claude" else "--codex-path"
+            return [
+                bash, str(script_dir / "install.sh"),
+                "--target", target, flag, str(destination_root), "--force",
+            ]
+
+        check_refuses_own_clone(sh_command, repo_root, tmp_path, "Bash")
 
 
 def main() -> None:
