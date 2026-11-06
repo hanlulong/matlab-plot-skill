@@ -51,7 +51,7 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 
 ## Prerequisites
 
-- MATLAB R2021a or newer. The export helper uses `exportgraphics` (R2020a+) and argument validators such as `mustBeTextScalar` (R2020b+); the demo and the documented helper calls use name=value argument syntax (`WidthInches=6.5`), which requires R2021a+. On newer releases the helper also uses `fontname` (R2022a+) and figure themes (R2025a+) when they exist.
+- MATLAB R2021a or newer. The export helper uses `exportgraphics` (R2020a+) and argument validators such as `mustBeTextScalar` (R2020b+); the demo and the documented helper calls use name=value argument syntax (`WidthInches=6.5`), which requires R2021a+. On newer releases the helper also uses `fontname` (R2022a+), figure themes (R2025a+), and the `exportgraphics` `Width`/`Height` options (R2025a+, which make the PDF exactly the requested size) when they exist.
 - `matlab` on your `PATH`, so the agent can run `matlab -batch`. Check with `matlab -batch "disp(version)"`. On macOS MATLAB is often not on `PATH` after installation (MathWorks documents starting it from its `bin` folder). Link it into `/usr/local/bin`, adjusting the release name:
 
   ```bash
@@ -156,7 +156,7 @@ On Windows, use `Remove-Item -LiteralPath "$HOME\.codex\skills\matlab-plot-skill
   ./install.sh --force
   ```
 
-  If `git pull` stops with "Your local changes ... would be overwritten" for `examples/output/demo_publication_figure.png`, you ran the demo before 0.2.0, which wrote into that tracked file. Discard the local render with `git checkout -- examples/output` and pull again; the demo now writes only to git-ignored files.
+  If `git pull` stops with "Your local changes ... would be overwritten" for `examples/output/demo_publication_figure.png`, you ran the demo from a version before 0.2.0, which wrote into that tracked file. Discard the local render with `git checkout -- examples/output` and pull again; the demo now writes only to git-ignored files.
 
 ## Uninstall
 
@@ -171,7 +171,7 @@ On Windows, use `Remove-Item -LiteralPath "$HOME\.codex\skills\matlab-plot-skill
 
 ## Example Invocation
 
-In Claude Code, invoke the skill directly with `/matlab-plot-skill`, or just describe the task; Claude loads the skill when the request matches its description:
+In Claude Code, invoke the skill directly with `/matlab-plot-skill` (`/matlab-plot-skill:matlab-plot-skill` after a plugin install), or just describe the task; Claude loads the skill when the request matches its description:
 
 ```text
 /matlab-plot-skill Refactor Plots/generate_my_figure.m into a publication-quality PDF figure for a two-column paper. Read the exported PNG, then iterate until the spacing and titles are clean.
@@ -181,7 +181,7 @@ In Claude Code, invoke the skill directly with `/matlab-plot-skill`, or just des
 Clean up the MATLAB figure in make_irf_plot.m for my LaTeX paper: one shared legend, readable fonts at text width, vector PDF.
 ```
 
-In Codex, mention the skill with `$matlab-plot-skill`:
+In Codex, mention the skill with `$matlab-plot-skill` (`$matlab-plot-skill:matlab-plot-skill` after a plugin install):
 
 ```text
 Use $matlab-plot-skill to refactor Plots/generate_my_figure.m into a publication-quality PDF figure. Read the exported figure and the compiled paper page, then iterate until the spacing and titles are clean.
