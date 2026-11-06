@@ -39,7 +39,7 @@ Do not stop after writing plotting code.
    exportgraphics(fig, 'figure.pdf', 'ContentType', 'vector');   % deliverable
    exportgraphics(fig, 'figure.png', 'Resolution', 220);         % what you read
    ```
-   (Or pass `PreviewPath` to `scripts/export_publication_figure.m` to get both at once.)
+   On R2025a+ add `'Width', w, 'Height', h, 'Units', 'inches'` to both calls. Without them the export is cropped to its content, about 5–15% smaller than the figure, and LaTeX scales the text up to fill the width. (Or pass `PreviewPath` to `scripts/export_publication_figure.m`, which exports both files at the exact size.)
 4. **Read the PNG** with your image-reading tool. You cannot visually inspect a vector PDF directly, so the PNG preview is the read target — the PDF is the deliverable. If only a PDF exists, rasterize page 1 first (`pdftoppm -png -r 200 -singlefile figure.pdf out` or `magick -density 200 figure.pdf out.png`, both producing `out.png`).
 5. If you can compile the document, render the embedded page and read it too. This step is conditional — never skip step 4 because step 5 is impossible.
 6. **Critique** the rendered PNG against [`references/render_review_checklist.md`](./references/render_review_checklist.md): aspect ratio, whitespace, title readability, legend placement, font sizes, clipping, marker visibility, line weights, panel balance, and page fit.

@@ -132,6 +132,59 @@ center = img(round(end/2), round(end/2), :);
 testCase.verifyGreaterThan(min(center(:)), 200, 'Plot box should be light.');
 end
 
+function testExportedPageMatchesFigureSize(testCase)
+% On R2025a+ the PDF page and the PNG preview must be the requested size,
+% not the tight crop, including when the same figure is re-exported at a
+% new size (paper, then slides).
+testCase.assumeFalse(isMATLABReleaseOlderThan("R2025a"), ...
+    'exportgraphics Width/Height need R2025a+.');
+fig = figure('Units', 'inches', 'Position', [1 1 8 7]);
+tl = tiledlayout(fig, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+nexttile(tl); plot(1:10); title('A'); xlabel('x'); ylabel('y');
+nexttile(tl); plot(10:-1:1); title('B');
+export_publication_figure(fig, 'paper.pdf', WidthInches=6.5, HeightInches=4, ...
+    PreviewPath='paper.png', PreviewResolution=200);
+testCase.verifyEqual(pdf_page_size('paper.pdf'), [468 288], 'AbsTol', 1);
+info = imfinfo('paper.png');
+testCase.verifyEqual([info.Width info.Height], [1300 800], 'AbsTol', 2);
+export_publication_figure(fig, 'slides.pdf', WidthInches=4.5, HeightInches=3);
+testCase.verifyEqual(pdf_page_size('slides.pdf'), [324 216], 'AbsTol', 1);
+% No size passed: the caller's own figure size is exported exactly.
+fig2 = figure('Units', 'inches', 'Position', [1 1 3.49 2.6]);
+plot(1:3);
+export_publication_figure(fig2, 'column.pdf');
+testCase.verifyEqual(pdf_page_size('column.pdf'), [3.49 2.6] * 72, 'AbsTol', 1);
+end
+
+function testOlderReleasesExportWithoutSizeOptions(testCase)
+% Before R2025a exportgraphics rejects Width/Height, so the helper must not
+% pass them. Shadow isMATLABReleaseOlderThan to take that branch here.
+shadowDir = fullfile(testCase.TestData.outDir, 'shadow');
+mkdir(shadowDir);
+fid = fopen(fullfile(shadowDir, 'isMATLABReleaseOlderThan.m'), 'w');
+fprintf(fid, 'function tf = isMATLABReleaseOlderThan(varargin)\ntf = true;\nend\n');
+fclose(fid);
+testCase.applyFixture(matlab.unittest.fixtures.PathFixture(shadowDir));
+fig = figure('Units', 'inches', 'Position', [1 1 6.5 4]);
+plot(1:3); xlabel('x'); ylabel('y');
+export_publication_figure(fig, 'old.pdf', WidthInches=6.5, HeightInches=4);
+pageSize = pdf_page_size('old.pdf');
+% Cropped to the content: smaller than the figure, but not wildly so.
+testCase.verifyLessThan(pageSize, [468 288]);
+testCase.verifyGreaterThan(pageSize, [0.8 0.8] .* [468 288]);
+end
+
+function pageSize = pdf_page_size(pdfPath)
+% Return [width height] in points from the PDF's first /MediaBox.
+fid = fopen(pdfPath, 'r');
+bytes = fread(fid, Inf, '*char')';
+fclose(fid);
+tokens = regexp(bytes, '/MediaBox\s*\[\s*([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)', ...
+    'tokens', 'once');
+box = str2double(tokens);
+pageSize = box(3:4) - box(1:2);
+end
+
 function msg = default_size_warning(fcn)
 % Run fcn with the defaultSize warning promoted to an error and return its
 % message ('' if it was not raised).

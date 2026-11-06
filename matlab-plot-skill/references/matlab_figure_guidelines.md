@@ -55,7 +55,14 @@ export_publication_figure(fig, 'fig.pdf', WidthInches=3.49, HeightInches=2.6);
 \includegraphics[width=\linewidth]{fig.pdf}   % no scale factor
 ```
 
-`exportgraphics` crops to a thin margin around the content by default, so the PDF comes out slightly smaller than the figure (the repo's 6.5 x 5 in demo exports at about 6.2 x 4.9 in). Including it at `width=\linewidth` therefore scales it up by a few percent, which is harmless; include it at natural size (`\includegraphics{fig.pdf}`) when exact point sizes matter.
+By default `exportgraphics` crops the export to its content, so the PDF comes out about 5–15% smaller than the figure (on R2026a a 6.5 x 4 in figure with one axes exports at about 5.6 x 3.8 in), and `width=\linewidth` then enlarges the text by the same amount. From R2025a, pass the size to `exportgraphics` as well:
+
+```matlab
+exportgraphics(fig, 'fig.pdf', 'ContentType', 'vector', ...
+    'Width', 3.49, 'Height', 2.6, 'Units', 'inches');
+```
+
+The page is then exactly that size and text prints within about 1% of its point size. The helper does this on R2025a+. It also avoids a problem seen on R2026a: a figure resized after it was drawn (for example, re-exported at a slide size after the paper size) can otherwise export at its previous size. On R2021a–R2024b these options do not exist, so include the cropped PDF at its natural size (`\includegraphics{fig.pdf}`) when exact point sizes matter. Check the result with `pdfinfo fig.pdf`: the `Page size` line is in points, so divide by 72 to get inches.
 
 ## Style Defaults
 
@@ -101,6 +108,8 @@ Use:
 ```matlab
 exportgraphics(gcf, outputPath, 'ContentType', 'vector', 'BackgroundColor', 'white');
 ```
+
+On R2025a+ add `'Width', w, 'Height', h, 'Units', 'inches'` so the PDF is the final size instead of a tight crop (see [Sizing And Page Fit](#sizing-and-page-fit)).
 
 `exportgraphics` chooses vector vs. raster output via `ContentType` and **ignores the figure `Renderer` property** — there is no renderer to set for the PDF. (`set(gcf, 'Renderer', ...)` only affects on-screen drawing and the legacy `print`/`saveas` paths.)
 

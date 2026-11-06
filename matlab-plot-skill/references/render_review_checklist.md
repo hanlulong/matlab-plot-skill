@@ -27,6 +27,7 @@ Use this checklist after exporting the figure. Read the actual rendered figure b
 ## PDF Internals
 
 - Select text in the PDF to confirm it is vector text with embedded fonts, not a rasterized image.
+- Check the page size: `pdfinfo figure.pdf` prints `Page size` in points, which divided by 72 should give the final width and height in inches. Before R2025a it is a tight crop, about 5–15% smaller.
 - Check that all text uses one font family (`pdffonts figure.pdf` should list one family, e.g. only Arial); `text()` and `xline`/`yline` labels are the usual strays.
 - Check that minus signs and negative numbers render (MATLAB's Unicode minus can drop in some viewers or LaTeX fonts).
 

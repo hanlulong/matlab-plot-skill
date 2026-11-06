@@ -11,14 +11,21 @@ function export_publication_figure(fig, outputPath, opts)
 %
 %   Sizing: pass WidthInches and HeightInches as the figure's FINAL printed
 %   size (e.g. 6.5 in for a 1-in-margin letter text width, about 3.2-3.5 in
-%   for one column of a two-column class) so the LaTeX include needs no
-%   scaling and the fonts below render at their stated point sizes. A
-%   dimension you omit keeps the figure's current size, so a size set with
+%   for one column of a two-column class). A dimension you omit keeps the
+%   figure's current size, so a size set with
 %   figure('Units','inches','Position',...) is respected. MATLAB's default
 %   figure size depends on the platform and session (about 10 x 6 in under
 %   matlab -batch), so a warning is issued when either dimension is omitted
-%   and the figure still has the default size. See
-%   references/matlab_figure_guidelines.md.
+%   and the figure still has the default size.
+%
+%   Exported size: on R2025a+ the helper passes the figure size to
+%   exportgraphics (Width/Height/Units), so the PDF page and the PNG preview
+%   are exactly that size, the LaTeX include at that width needs no scaling,
+%   and the fonts below print within about 1% of their stated point sizes.
+%   Before R2025a exportgraphics has no Width/Height options and crops the
+%   export to its content, so the PDF comes out about 5-15% smaller than the
+%   figure. Check with: pdfinfo figure.pdf (Page size in pt; divide by 72).
+%   See references/matlab_figure_guidelines.md.
 %
 %   Layout spacing: LayoutPadding and TileSpacing are applied to every
 %   tiledlayout only when passed; by default each layout keeps the spacing
@@ -37,7 +44,8 @@ function export_publication_figure(fig, outputPath, opts)
 %     errorbar, bar, and patch series are not auto-styled.
 %
 %   Requires MATLAB R2021a+ (name=value call syntax; mustBeTextScalar is
-%   R2020b+). fontname (R2022a+) and theme (R2025a+) are used when available.
+%   R2020b+). fontname (R2022a+), theme (R2025a+), and the exportgraphics
+%   Width/Height/Units options (R2025a+) are used when available.
 
 arguments
     fig (1,1) matlab.ui.Figure
@@ -80,7 +88,7 @@ if exist('theme', 'file') == 2 && isprop(fig, 'Theme')
     theme(fig, 'light');
 end
 
-apply_size(fig, opts);
+exportSize = apply_size(fig, opts);
 
 % exportgraphics selects vector vs. raster output via 'ContentType' and ignores
 % the figure 'Renderer' property, so there is no renderer to set for the PDF.
@@ -112,24 +120,40 @@ unify_font(fig, opts.FontName);
 
 drawnow;
 
+sizeArgs = export_size_args(exportSize);
+
 ensure_parent_dir(outputPath);
 exportgraphics(fig, outputPath, ...
     'ContentType', opts.ContentType, ...
-    'BackgroundColor', opts.BackgroundColor);
+    'BackgroundColor', opts.BackgroundColor, sizeArgs{:});
 
 if strlength(opts.PreviewPath) > 0
     ensure_parent_dir(opts.PreviewPath);
     exportgraphics(fig, opts.PreviewPath, ...
         'Resolution', opts.PreviewResolution, ...
-        'BackgroundColor', opts.BackgroundColor);
+        'BackgroundColor', opts.BackgroundColor, sizeArgs{:});
 end
 end
 
-function apply_size(fig, opts)
+function args = export_size_args(exportSize)
+% exportgraphics crops to the content by default, so without Width/Height the
+% PDF is narrower than the figure. On R2026a a figure resized after it was
+% drawn can also export at its previous size until MATLAB catches up; passing
+% the size explicitly avoids both. Width/Height/Units need R2025a+ (installed
+% MATLAB); older releases keep the cropped export.
+args = {};
+if ~isMATLABReleaseOlderThan("R2025a")
+    args = {'Width', exportSize(1), 'Height', exportSize(2), 'Units', 'inches'};
+end
+end
+
+function exportSize = apply_size(fig, opts)
 % Resize only the dimensions the caller passed; keep the rest of the figure's
 % current size. Check for MATLAB's default size BEFORE resizing, so a call
 % that passes only one dimension (e.g. WidthInches=6.5 on a plain figure())
 % still warns that the other dimension is MATLAB's default, not a choice.
+% Returns the final [width height] in inches, computed from the request
+% rather than read back from the figure, which can lag behind a resize.
 omitted = strings(1, 0);
 if isempty(opts.WidthInches)
     omitted(end + 1) = "WidthInches";
@@ -165,6 +189,7 @@ if ~isempty(opts.HeightInches)
     position(4) = opts.HeightInches;
 end
 fig.Position = position;
+exportSize = position(3:4);
 end
 
 function style_layout_text(layout, opts)
