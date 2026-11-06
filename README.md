@@ -43,12 +43,14 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 - [`install.sh`](./install.sh)
 - [`examples/demo_publication_figure.m`](./examples/demo_publication_figure.m)
 - [`examples/output/demo_publication_figure.png`](./examples/output/demo_publication_figure.png) (committed preview image)
+- [`tests/test_export_publication_figure.m`](./tests/test_export_publication_figure.m) (MATLAB unit tests for the helper)
 - [`tools/validate_repo.py`](./tools/validate_repo.py)
-- [`LICENSE`](./LICENSE), [`CITATION.cff`](./CITATION.cff)
+- [`CHANGELOG.md`](./CHANGELOG.md), [`LICENSE`](./LICENSE), [`CITATION.cff`](./CITATION.cff)
 
 ## Prerequisites
 
-- MATLAB R2021a or newer. The export helper uses `exportgraphics` (R2020a+) and an `arguments` block (R2019b+); the demo and the documented helper calls use name=value argument syntax (`WidthInches=8.4`), which requires R2021a+.
+- MATLAB R2021a or newer. The export helper uses `exportgraphics` (R2020a+) and argument validators such as `mustBeTextScalar` (R2020b+); the demo and the documented helper calls use name=value argument syntax (`WidthInches=6.5`), which requires R2021a+. On newer releases the helper also uses `fontname` (R2022a+) and figure themes (R2025a+) when they exist.
+- Optional: `pdftoppm` (Poppler) or ImageMagick, so the agent can rasterize a PDF it needs to read.
 - For repo validation only: `uv` (or Python 3 with `pyyaml`).
 
 ## Install
@@ -92,16 +94,34 @@ Install only into Claude Code:
 ./install.sh --target claude
 ```
 
+Overwrite an existing installed copy with `--force`; see all options with `./install.sh --help`.
+
 ## Manual Install
 
 Copy the [`matlab-plot-skill`](./matlab-plot-skill) folder into one or both of these locations:
 
-- Codex: `~/.agents/skills/matlab-plot-skill` (Codex releases before 2026 used `~/.codex/skills`)
+- Codex: `~/.agents/skills/matlab-plot-skill`
 - Claude Code: `~/.claude/skills/matlab-plot-skill`
+
+If you installed this skill before 2026-05-30 (when the installers still targeted `~/.codex/skills`) or copied it there by hand, an old copy may still sit in `~/.codex/skills/matlab-plot-skill` (`$CODEX_HOME/skills` if you set `CODEX_HOME`). Codex still loads skills from that deprecated location, so the skill appears twice and the old copy can be stale. The installers warn about it but never delete it; remove it yourself:
+
+```bash
+rm -rf ~/.codex/skills/matlab-plot-skill
+```
 
 ## Example Invocation
 
-Use prompts like:
+In Claude Code, invoke the skill directly with `/matlab-plot-skill`, or just describe the task; Claude loads the skill when the request matches its description:
+
+```text
+/matlab-plot-skill Refactor Plots/generate_my_figure.m into a publication-quality PDF figure for a two-column paper. Read the exported PNG, then iterate until the spacing and titles are clean.
+```
+
+```text
+Clean up the MATLAB figure in make_irf_plot.m for my LaTeX paper: one shared legend, readable fonts at text width, vector PDF.
+```
+
+In Codex, mention the skill with `$matlab-plot-skill`:
 
 ```text
 Use $matlab-plot-skill to refactor Plots/generate_my_figure.m into a publication-quality PDF figure. Read the exported figure and the compiled paper page, then iterate until the spacing and titles are clean.
@@ -128,7 +148,7 @@ The PNG is there for fast review. The PDF is the publication-style export for th
 
 ## Validation
 
-`tools/validate_repo.py` is an optional local check (it is not run by CI). Run it before contributing:
+`tools/validate_repo.py` is an optional local check (the repo has no CI). Run it before contributing:
 
 ```bash
 uv run --with pyyaml python tools/validate_repo.py .
@@ -139,22 +159,31 @@ uv run --with pyyaml python tools/validate_repo.py .
 This checks:
 
 - required skill packaging files, including the committed demo PNG
-- `SKILL.md` front matter and that the body still expresses the render-review-iterate workflow
+- `SKILL.md` front matter against the Agent Skills rules and Codex's allowed keys, and that the body still expresses the render-review-iterate workflow
+- the version in `SKILL.md` metadata matches `CITATION.cff` and has a `CHANGELOG.md` entry
 - the export helper still uses `exportgraphics` vector output, and the demo still calls that helper
-- relative markdown links resolve
+- relative markdown links resolve (README, CHANGELOG, SKILL.md, and the reference files)
 - `openai.yaml` skill metadata
-- PowerShell install flow (when PowerShell is available)
-- bash install flow (when bash is available)
+- PowerShell install flow (when PowerShell is available), including the legacy-copy warning
+- bash install flow (when bash is available), including `--help` and the legacy-copy warning
+
+With MATLAB installed, also run the helper's unit tests from the repository root:
+
+```bash
+matlab -batch "assertSuccess(runtests('tests'))"
+```
 
 ## Making Changes
 
-1. If you change the MATLAB code, lint it locally: `matlab -batch "checkcode('matlab-plot-skill/scripts/export_publication_figure.m')"` (and the demo).
-2. If you change the demo, re-run it with MATLAB and re-commit `examples/output/demo_publication_figure.png` (the committed preview image).
-3. Run the validator above before committing.
+1. If you change the MATLAB code, lint it locally: `matlab -batch "checkcode('matlab-plot-skill/scripts/export_publication_figure.m')"` (and the demo), and run the unit tests above.
+2. If you change the demo or the helper, re-run the demo with MATLAB and re-commit `examples/output/demo_publication_figure.png` (the committed preview image).
+3. For a release, bump `metadata.version` in `SKILL.md` and `version` in `CITATION.cff`, and add a [`CHANGELOG.md`](./CHANGELOG.md) entry.
+4. Run the validator above before committing.
 
 ## Notes
 
 - Codex reads [`agents/openai.yaml`](./matlab-plot-skill/agents/openai.yaml) for optional UI metadata.
 - Claude Code can use the same `SKILL.md`-based folder structure.
 - The installer copies the skill, so re-run it with `--force` (`-Force` on PowerShell) after you update the repo to refresh the installed copy.
-- Restart your Claude Code or Codex session after installing so the new skill is picked up.
+- Claude Code picks up new and changed skills in `~/.claude/skills` without a restart. If `~/.claude/skills` did not exist when your session started, run `/reload-skills` once. Restart Codex after installing so it loads the skill.
+- See [`CHANGELOG.md`](./CHANGELOG.md) for what changed in each version. Version 0.2.0 changed the helper's defaults: it now keeps your figure size and layout spacing unless you pass `WidthInches`/`HeightInches` or `TileSpacing`/`LayoutPadding`.
