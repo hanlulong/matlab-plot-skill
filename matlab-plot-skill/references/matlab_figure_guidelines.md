@@ -114,11 +114,14 @@ On R2025a+ add `'Width', w, 'Height', h, 'Units', 'inches'` so the PDF is the fi
 
 `exportgraphics` chooses vector vs. raster output via `ContentType` and **ignores the figure `Renderer` property** — there is no renderer to set for the PDF. (`set(gcf, 'Renderer', ...)` only affects on-screen drawing and the legacy `print`/`saveas` paths.)
 
+EPS has no transparency: MATLAB writes a `FaceAlpha` band to EPS as an opaque, pre-blended fill (seen on R2026a), which hides grid lines and any band underneath. Prefer PDF; if a journal requires EPS, draw the wider band first so the narrower one stays visible.
+
 Always inspect the exported PDF. Even when `exportgraphics(..., 'ContentType', 'vector')` is the right default, some MATLAB versions or graphics objects can still produce artifacts or awkward text handling.
 
 If figure-level PDF export looks wrong:
 
-- try exporting the `tiledlayout` or `axes` handle directly,
+- call `exportgraphics` directly on the `tiledlayout` or `axes` handle (the helper accepts only a figure handle),
+- if a figure whose axes sit in two or more `uipanel`s or tabs fails to export (seen on R2026a, with an error that begins "Figure has more than one container"), export each container with `exportgraphics`, or rebuild the panels as tiles of one `tiledlayout`,
 - inspect the standalone PDF and the final LaTeX page,
 - generate a PNG review export so you can read the figure quickly during iteration.
 
@@ -135,7 +138,7 @@ A vector PDF is the wrong choice for figures with many thousands of primitives (
 
 1. Reduce the number of primitives so the vector export stays small and all text stays vector: draw gridded data with `imagesc`/`image` instead of `pcolor` or a flat `surf` (the data is embedded as a bitmap while text stays vector; the same 400 x 400 grid exports to tens of KB for a smooth surface and a few hundred KB for random noise, which compresses poorly, depending on the figure size), and replace dense scatters with `binscatter`, `histogram2`, or a downsample.
 2. Export the heavy panel on its own as an image (`exportgraphics(ax, 'panel.png', 'Resolution', 300)` or an image-only PDF) and assemble it with the vector panels in LaTeX, for example with `subcaption`.
-3. Export the whole figure with `ContentType='image'` at 300–600 DPI and accept raster text.
+3. Export the whole figure with `ContentType='image'` at 300–600 DPI and accept raster text. The helper exports images at exportgraphics' default 150 dpi, so run the helper first (it styles the figure), then call `exportgraphics(fig, 'fig.pdf', 'ContentType', 'image', 'Resolution', 300)` directly, adding `'Width', w, 'Height', h, 'Units', 'inches'` on R2025a+. On R2026a the image in such a PDF is JPEG-compressed.
 
 ## Layout Rules
 
