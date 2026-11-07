@@ -87,10 +87,12 @@ Use the figure's own size for `Width` and `Height` (`exportgraphics` re-lays the
         0   0   0;   % black
       230 159   0;   % orange (2.3:1, pair with markers)
        86 180 233] / 255;   % sky blue (2.3:1, pair with markers)
-  set(groot, 'defaultAxesColorOrder', okabeIto);   % or per-axes: ax.ColorOrder = okabeIto
+  colororder(fig, okabeIto);   % right after fig = figure, before plotting (R2019b+)
   ```
 
-  Use Okabe–Ito yellow (`[240 228 66] / 255`) only for filled areas or bars, or give it a dark edge. MATLAB's default blue/orange (`[0 0.447 0.741]` / `[0.85 0.325 0.098]`) is already reasonably colorblind-safe; red/green pairings are not.
+  Set the order on the figure: it applies to every axes in that figure and persists through later plotting calls. Avoid `set(groot, 'defaultAxesColorOrder', ...)`, which changes every later figure in the MATLAB session (for example the next script in a replication run). A per-axes order (`colororder(ax, ...)` or `ax.ColorOrder = ...`) is replaced by the next plotting call unless `hold(ax, 'on')` comes first.
+
+  Use Okabe–Ito yellow (`[240 228 66] / 255`) only for filled areas or bars, or give it a dark edge. MATLAB's default blue/orange (about `[0 0.447 0.741]` / `[0.85 0.325 0.098]`) is already reasonably colorblind-safe; red/green pairings are not.
 - For continuous data (heatmaps, surfaces, `pcolor`), use a sequential built-in colormap: `parula` (the default) or `sky` (R2023a+, light to dark blue), or `gray` for print. `turbo` (R2020b+) is a smoother rainbow than `jet` for data that needs many distinct hues, but it is not perceptually uniform. Avoid `jet` and `hsv`. MATLAB has no built-in `viridis`, `cividis`, `magma`, or `plasma`: `colormap(viridis)` fails with "Unrecognized function or variable", so do not call them unless the project already defines them.
 - Make series distinguishable in grayscale too: pair color with marker shape or line style.
 
@@ -123,7 +125,7 @@ If figure-level PDF export looks wrong:
 ### PDF Internals To Verify
 
 - Select text in the exported PDF: it should be selectable vector text with embedded fonts, not a rasterized image and not outlined curves.
-- Check that minus signs and negative numbers render. MATLAB uses the Unicode minus (U+2212), which some viewers or LaTeX font setups drop or show as a missing-glyph box; switch the font or reformat the affected labels if so.
+- Check that negative numbers render with a visible sign. MATLAB writes negative tick labels with the ASCII hyphen-minus (U+002D), not the typographic minus (U+2212) (checked on R2026a). If the journal's style requires a true minus, relabel those ticks deliberately.
 
 ## Rasterizing Heavy Figures
 
@@ -146,7 +148,7 @@ A vector PDF is the wrong choice for figures with many thousands of primitives (
 
 - When auto-ticks crowd, set a sparse explicit vector: `xticks(0:0.25:1)` or `set(ax, 'YTick', ...)`.
 - Kill the corner axis multiplier (the `1e4` parked above the axis): `ax.YAxis.Exponent = 0;` (or relabel deliberately).
-- Force consistent decimals or thousands separators: `ax.YAxis.TickLabelFormat = '%.1f';` (or `'%,.0f'`).
+- `TickLabelFormat` formats the values shown next to the x10^n multiplier, not the raw values. For a format written for the raw values (always the case with a thousands separator such as `'%,.0f'`), set `ax.YAxis.Exponent = 0` first. Otherwise a 0-250,000 axis shown with a x10^5 multiplier prints 0 | 1 | 1 | 2 | 2 | 3 (seen on R2026a). Choose the decimals for the values actually shown (for example `'%.1f'`), and check the PNG for repeated tick labels.
 - Avoid rotated x tick labels except for long categorical names.
 
 ## Title Rules

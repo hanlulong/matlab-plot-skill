@@ -51,14 +51,14 @@ Do not stop after writing plotting code.
 
 ## Worked Recipe
 
-The full loop in one place — build, export both files, then read the PNG. First copy the helper, `${CLAUDE_SKILL_DIR}/scripts/export_publication_figure.m`, next to the plotting script (for example into `Plots/`), so the script runs without this skill. Never write the skill's own path into the user's `.m` file: a plugin install lives in a version-numbered folder that is replaced on update, and coauthors or a replication package do not have it. `${CLAUDE_SKILL_DIR}` is the folder containing this SKILL.md; Claude Code fills it in. If it still appears literally (as in Codex), use the folder this file was loaded from: typically `~/.agents/skills/matlab-plot-skill`, or a folder under `~/.codex/plugins/cache/` for a plugin install.
+The full loop in one place — build, export both files, then read the PNG. First copy the helper, `${CLAUDE_SKILL_DIR}/scripts/export_publication_figure.m`, next to the plotting script (for example into `Plots/`), so the script runs without this skill. Never write the skill's own path into the user's `.m` file: a plugin install lives in a version-numbered folder that is replaced on update, and coauthors or a replication package do not have it. `${CLAUDE_SKILL_DIR}` is the folder containing this SKILL.md; Claude Code fills it in. If it still appears literally (as in Codex), use the folder this file was loaded from: typically `~/.agents/skills/matlab-plot-skill`, or a folder under `$CODEX_HOME/plugins/cache/` (default `~/.codex/plugins/cache/`) for a plugin install.
 
 ```matlab
 % Plots/make_figure.m -- export_publication_figure.m sits in Plots/ too.
 fig = figure;
 tl = tiledlayout(fig, 2, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
-nexttile; plot(x, y1); title('Panel A');
-nexttile; plot(x, y2); title('Panel B');
+ax = nexttile(tl); plot(ax, x, y1); title(ax, 'Panel A');   % hold(ax, 'on') before a second series
+ax = nexttile(tl); plot(ax, x, y2); title(ax, 'Panel B');
 % ... remaining panels, one shared legend ...
 
 export_publication_figure(fig, 'out/figure.pdf', ...
