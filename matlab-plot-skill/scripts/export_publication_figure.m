@@ -48,7 +48,7 @@ function export_publication_figure(fig, outputPath, opts)
 %     session does not export gray text on a black plot box.
 %   - Line/marker readability floors apply only to 'line' objects; scatter,
 %     errorbar, bar, and patch series are not auto-styled.
-%     The floor reaches every line, including lines with
+%     The floor reaches every line in Cartesian axes, including lines with
 %     HandleVisibility='off' (for example thin context or bootstrap paths).
 %   - Forced house style: every Cartesian axes gets Box='off',
 %     TickDir='out' and LineWidth=0.8, and every legend gets Box='off',
@@ -63,9 +63,11 @@ function export_publication_figure(fig, outputPath, opts)
 %   - Only a figure handle is accepted. To export an axes, a tiledlayout
 %     or a panel, call exportgraphics on it directly.
 %   - A raster OutputPath (.png, .jpg, .tif, .gif) or ContentType="image"
-%     exports at exportgraphics' default 150 dpi (a raster OutputPath also
-%     prints a ContentType warning on R2026a). For 300-600 dpi, run this
-%     helper, then call exportgraphics directly with 'Resolution'.
+%     exports at exportgraphics' default 150 dpi. With the default
+%     ContentType="vector", a raster OutputPath also prints the warning
+%     MATLAB:print:ImageOutputIgnoresVectorContentType on R2026a. For
+%     300-600 dpi, run this helper, then call exportgraphics directly with
+%     'Resolution'.
 %
 %   Requires MATLAB R2021a+ (name=value call syntax; mustBeTextScalar is
 %   R2020b+). fontname (R2022a+), theme (R2025a+), and the exportgraphics
@@ -114,8 +116,9 @@ end
 
 exportSize = apply_size(fig, opts);
 
-% exportgraphics selects vector vs. raster output via 'ContentType' and ignores
-% the figure 'Renderer' property, so there is no renderer to set for the PDF.
+% exportgraphics selects vector vs. raster output via 'ContentType', so there
+% is no renderer to set for the PDF (from R2025a the figure 'Renderer' property
+% has no effect).
 fig.Color = opts.BackgroundColor;
 
 layoutList = findall(fig, 'Type', 'tiledlayout');

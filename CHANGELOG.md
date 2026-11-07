@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.2.2] - 2026-11-07
+
+Documentation and comment fixes only; the export helper's executable code is unchanged.
+
+### Fixed
+
+- **Default colors.** The guidelines gave MATLAB's default blue and orange only as the pre-R2025a values. They now also give the R2025a+ `"gem"` values (`[0.066 0.443 0.745]` / `[0.866 0.329 0]`), as listed in the `colororder` Version History.
+- **Renderer.** The guidelines said `set(gcf, 'Renderer', ...)` still affects on-screen drawing and the legacy `print`/`saveas` paths. MathWorks says that from R2025a the figure `Renderer` and `RendererMode` properties have no effect. The guidelines and a helper comment now say so.
+- The helper Notes say the line-width floor reaches every line in Cartesian axes (it does not reach lines in `polaraxes` or `geoaxes`), and name the warning a raster output path prints on R2026a with the default `ContentType="vector"`: `MATLAB:print:ImageOutputIgnoresVectorContentType`.
+
 ## [0.2.1] - 2026-11-07
 
 The export helper's executable code is unchanged (comments only). Every other change is to the documentation, the eval data, or a GitHub issue form.
@@ -85,6 +95,7 @@ Ideas adapted, no text copied: K-Dense-AI/scientific-agent-skills, Haojae/scipil
 - Installers for macOS/Linux (`install.sh`) and Windows (`install.ps1`), targeting `~/.agents/skills` for Codex and `~/.claude/skills` for Claude Code.
 - A runnable demo with a committed preview image, and `tools/validate_repo.py`.
 
+[0.2.2]: https://github.com/hanlulong/matlab-plot-skill/compare/matlab-plot-skill--v0.2.1...matlab-plot-skill--v0.2.2
 [0.2.1]: https://github.com/hanlulong/matlab-plot-skill/compare/matlab-plot-skill--v0.2.0...matlab-plot-skill--v0.2.1
 [0.2.0]: https://github.com/hanlulong/matlab-plot-skill/compare/v0.1.0...matlab-plot-skill--v0.2.0
 [0.1.0]: https://github.com/hanlulong/matlab-plot-skill/releases/tag/v0.1.0

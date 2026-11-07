@@ -1,6 +1,6 @@
 {
   "name": "matlab-plot-skill",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Create, clean up, and export publication-quality MATLAB figures for papers, LaTeX or Overleaf, and Beamer slides: run MATLAB, read the rendered figure, and iterate until the layout is clean.",
   "author": {
     "name": "Lu Han",

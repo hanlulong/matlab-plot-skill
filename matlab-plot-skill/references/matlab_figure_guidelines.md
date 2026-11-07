@@ -92,7 +92,7 @@ Use the figure's own size for `Width` and `Height` (`exportgraphics` re-lays the
 
   Set the order on the figure: it applies to every axes in that figure and persists through later plotting calls. Avoid `set(groot, 'defaultAxesColorOrder', ...)`, which changes every later figure in the MATLAB session (for example the next script in a replication run). A per-axes order (`colororder(ax, ...)` or `ax.ColorOrder = ...`) is replaced by the next plotting call unless `hold(ax, 'on')` comes first.
 
-  Use Okabe–Ito yellow (`[240 228 66] / 255`) only for filled areas or bars, or give it a dark edge. MATLAB's default blue/orange (about `[0 0.447 0.741]` / `[0.85 0.325 0.098]`) is already reasonably colorblind-safe; red/green pairings are not.
+  Use Okabe–Ito yellow (`[240 228 66] / 255`) only for filled areas or bars, or give it a dark edge. MATLAB's default first two colors, a blue and an orange (`[0 0.447 0.741]` / `[0.85 0.325 0.098]` through R2024b; `[0.066 0.443 0.745]` / `[0.866 0.329 0]` in the R2025a+ `"gem"` palette, the light-theme default), are already reasonably colorblind-safe; red/green pairings are not.
 - For continuous data (heatmaps, surfaces, `pcolor`), use a sequential built-in colormap: `parula` (the default) or `sky` (R2023a+, light to dark blue), or `gray` for print. `turbo` (R2020b+) is a smoother rainbow than `jet` for data that needs many distinct hues, but it is not perceptually uniform. Avoid `jet` and `hsv`. MATLAB has no built-in `viridis`, `cividis`, `magma`, or `plasma`: `colormap(viridis)` fails with "Unrecognized function or variable", so do not call them unless the project already defines them.
 - Make series distinguishable in grayscale too: pair color with marker shape or line style.
 
@@ -114,7 +114,7 @@ exportgraphics(gcf, outputPath, 'ContentType', 'vector', 'BackgroundColor', 'whi
 
 On R2025a+ add `'Width', w, 'Height', h, 'Units', 'inches'` so the PDF is the final size instead of a tight crop (see [Sizing And Page Fit](#sizing-and-page-fit)).
 
-`exportgraphics` chooses vector vs. raster output via `ContentType` and **ignores the figure `Renderer` property** — there is no renderer to set for the PDF. (`set(gcf, 'Renderer', ...)` only affects on-screen drawing and the legacy `print`/`saveas` paths.)
+`exportgraphics` chooses vector vs. raster output via `ContentType` — there is no renderer to set for the PDF. From R2025a the figure `Renderer` and `RendererMode` properties have no effect (announced in R2022a); before that, `set(gcf, 'Renderer', ...)` affected on-screen drawing and the legacy `print`/`saveas` paths.
 
 EPS has no transparency: MATLAB writes a `FaceAlpha` band to EPS as an opaque, pre-blended fill (seen on R2026a), which hides grid lines and any band underneath. Prefer PDF; if a journal requires EPS, draw the wider band first so the narrower one stays visible.
 
