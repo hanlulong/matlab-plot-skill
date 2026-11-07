@@ -66,7 +66,7 @@ The key rule is simple: the agent must not stop after writing plotting code. It 
 
 ## Install
 
-Install the skill as a plugin from the [OpenEconAI plugin catalog](https://github.com/OpenEconAI/plugins), ask your agent to install it for you, or copy it into your skills folders with the installers below. Pick one per client: with both, the skill loads twice.
+Install the skill as a plugin from the [OpenEconAI plugin catalog](https://github.com/OpenEconAI/plugins), ask your agent to install it for you, copy it into your skills folders with the installers below, or upload it on claude.ai. Pick one per client: with both, the skill loads twice.
 
 ### As a plugin
 
@@ -138,6 +138,8 @@ Overwrite an existing installed copy:
 .\install.ps1 -Force
 ```
 
+If PowerShell says running scripts is disabled on this system, its execution policy is blocking scripts (Restricted is the default on Windows clients). Run the installer with a one-time override for that process, which changes no saved setting: `powershell -ExecutionPolicy Bypass -File .\install.ps1` (append `-Target codex` or `-Force` as needed; use `pwsh` instead of `powershell` for PowerShell 7).
+
 #### macOS / Linux
 
 ```bash
@@ -151,6 +153,10 @@ Install only into Claude Code:
 ```
 
 Overwrite an existing installed copy with `--force`; see all options with `./install.sh --help`.
+
+### On claude.ai
+
+Download `matlab-plot-skill-X.Y.Z.zip` from the [latest release](https://github.com/hanlulong/matlab-plot-skill/releases/latest) and upload it as a skill in claude.ai's settings. There the skill cannot run the MATLAB on your computer: it writes the code and gives you the exact `matlab -batch` command to run. Attach the PNG it produces to the chat if you want it reviewed against the checklist. For the full render-and-review loop, use Claude Code or Codex.
 
 ## Manual Install
 
