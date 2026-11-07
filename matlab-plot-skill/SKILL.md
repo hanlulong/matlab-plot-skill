@@ -3,7 +3,7 @@ name: matlab-plot-skill
 description: "Creates, cleans up, and exports publication-quality MATLAB figures for papers, LaTeX or Overleaf documents, and Beamer slides. Use when writing or fixing MATLAB plotting code (plot, tiledlayout, subplot, exportgraphics, print, saveas) or when a MATLAB figure looks messy: cramped panels, unreadable titles or fonts, awkward legends, bad fit at the column or text width, or broken PDF output. Runs MATLAB headlessly, exports a vector PDF plus a PNG preview, reads the rendered figure, and iterates until the layout is clean. Not for matplotlib, R, Stata, or Excel charts."
 license: MIT
 metadata:
-  version: "0.2.0"
+  version: "0.2.1"
 ---
 
 # MATLAB Plot Skill

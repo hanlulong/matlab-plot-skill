@@ -2,6 +2,32 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.2.1] - 2026-11-07
+
+The export helper's executable code is unchanged (comments only). Every other change is to the documentation, the eval data, or a GitHub issue form.
+
+### Fixed
+
+- **Minus signs.** The guidance said MATLAB writes negative tick labels with the Unicode minus (U+2212). On R2026a it writes the ASCII hyphen-minus (U+002D). The guidelines and the checklist now say so, and say to relabel the ticks deliberately when a journal requires a true minus.
+- **Tick label formats.** `TickLabelFormat` formats the values shown next to the x10^n multiplier, not the raw values, so `'%,.0f'` on a 0-250,000 axis printed 0 | 1 | 1 | 2 | 2 | 3 (seen on R2026a). The guidelines now say to set `ax.YAxis.Exponent = 0` first for a format written for the raw values.
+- **Color order.** The Okabe-Ito example used `set(groot, 'defaultAxesColorOrder', ...)`, which changes every later figure in the MATLAB session. It now uses `colororder(fig, okabeIto)`, and says that a per-axes order is replaced by the next plotting call unless `hold(ax, 'on')` comes first.
+- The Worked Recipe plotted into the current axes (`nexttile; plot(x, y1)`). It now passes the handle from `nexttile(tl)` to `plot` and `title`, as the demo does.
+- SKILL.md names the Codex plugin cache as `$CODEX_HOME/plugins/cache/` (default `~/.codex/plugins/cache/`), so a custom `CODEX_HOME` is covered.
+- Two pieces of export advice the helper could not follow. "Export the `tiledlayout` or `axes` handle directly" now says to call `exportgraphics` on it, because the helper accepts only a figure. "Export the whole figure as an image at 300-600 DPI" now says to run the helper and then call `exportgraphics` with `'Resolution'`, because the helper exports images at the default 150 dpi.
+
+### Added
+
+- **Helper Notes.** The help text of `export_publication_figure.m` now says what the helper forces: every Cartesian axes gets `Box='off'`, `TickDir='out'` and `LineWidth=0.8`, and every legend gets `Box='off'`, which also removes its white background. It also says that the font size and weight options reach only Cartesian axes (not `polaraxes`, `geoaxes` or `heatmap`), that the `SuperTitle*` options do not reach `sgtitle`, that the figure is left with `Units='inches'`, that only a figure handle is accepted, that the line-width floor also reaches lines with `HandleVisibility='off'`, and that image exports (a raster output path or `ContentType="image"`) use the default 150 dpi. SKILL.md's Helper section points to these Notes.
+- Export notes in the guidelines: EPS writes a `FaceAlpha` band as an opaque fill, so prefer PDF; and a figure whose axes sit in two or more `uipanel`s or tabs fails to export as a whole (seen on R2026a), so export each container with `exportgraphics` or rebuild the panels as one `tiledlayout`.
+- **Uncertainty bands.** A band drawn as one `fill` or `patch` polygon disappears without an error if any bound is NaN, so the guidelines say to draw one band per run of finite bounds and keep the NaN gap in the mean line. They also say to keep bands out of the legend (no `data1` entries). The checklist and the end-to-end quality checks have matching items.
+- **Honest Encoding checks** in the review checklist: interval labels, one color scale for compared panels (`CLim` for axes plots, `ColorLimits` for `heatmap` charts), gaps for missing values, bars from zero, and `yyaxis` only for different units. The agent reports these to the user instead of changing the data, chart type, or caption.
+- A grayscale preview command in the checklist (`pdftoppm -gray`, or `im2gray` in the same `matlab -batch` call), and a note that Chinese, Japanese or Korean labels add a system fallback font to the PDF, which is expected.
+- README install notes: uploading the release zip on claude.ai, where the skill writes the code and the `matlab -batch` command for you to run, and a one-time `-ExecutionPolicy Bypass` when PowerShell blocks `install.ps1`.
+- Four trigger prompts (20 in all, 10 of each kind): an `export_fig` export and a MATLAB `heatmap` should load the skill; App Designer data tips and an `animatedline` animation should not.
+- A "Report a bad figure" issue form.
+
+Ideas adapted, no text copied: K-Dense-AI/scientific-agent-skills, Haojae/scipilot-figure-skill and blader/humanizer (all MIT).
+
 ## [0.2.0] - 2026-11-07
 
 ### Changed
@@ -59,5 +85,6 @@ All notable changes to this project are documented here. The format follows [Kee
 - Installers for macOS/Linux (`install.sh`) and Windows (`install.ps1`), targeting `~/.agents/skills` for Codex and `~/.claude/skills` for Claude Code.
 - A runnable demo with a committed preview image, and `tools/validate_repo.py`.
 
+[0.2.1]: https://github.com/hanlulong/matlab-plot-skill/compare/matlab-plot-skill--v0.2.0...matlab-plot-skill--v0.2.1
 [0.2.0]: https://github.com/hanlulong/matlab-plot-skill/compare/v0.1.0...matlab-plot-skill--v0.2.0
 [0.1.0]: https://github.com/hanlulong/matlab-plot-skill/releases/tag/v0.1.0
