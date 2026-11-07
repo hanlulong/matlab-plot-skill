@@ -1,0 +1,29 @@
+name: Report a bad figure
+description: The skill produced a messy, misleading, or broken MATLAB figure, or failed to run or review it.
+title: "[Bad figure]: "
+labels: ["bad-figure"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What the skill produced
+      description: Paste the plotting code or a minimal reproduction, attach the PNG, or describe the figure. Redact confidential or unpublished data; a synthetic reproduction is enough.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What a good figure would have done
+      description: "What is wrong: cramped layout or clipped text, unreadable fonts at the include width, legend, colors, PDF export (page size, mixed fonts, file size), a helper error or warning, the skill not running MATLAB or not reading the figure, or an install problem?"
+    validations:
+      required: true
+  - type: input
+    id: setup
+    attributes:
+      label: MATLAB release, OS, client and install type
+      placeholder: "R2026a, macOS, Claude Code plugin"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Helper warnings, MATLAB output, or the exact request (redacted) if relevant.
