@@ -32,6 +32,14 @@
     "should_trigger": true
   },
   {
+    "query": "My export_fig call in make_fig1.m crops the figure oddly and the PDF fonts do not match my LaTeX paper; fix the export",
+    "should_trigger": true
+  },
+  {
+    "query": "The MATLAB heatmap of my transition matrix in plot_trans.m has tiny labels once it is in the paper",
+    "should_trigger": true
+  },
+  {
     "query": "clean up this matplotlib figure: fig, axes = plt.subplots(2, 2); the legend overlaps panel B. export it to pdf for my paper",
     "should_trigger": false
   },
@@ -61,6 +69,14 @@
   },
   {
     "query": "Compile my Overleaf project and fix the undefined reference warnings in main.tex",
+    "should_trigger": false
+  },
+  {
+    "query": "Add data tips and a click callback to the UIAxes in my App Designer app so users can inspect each point",
+    "should_trigger": false
+  },
+  {
+    "query": "Animate the simulated trajectory in sim_path.m with animatedline and drawnow limitrate",
     "should_trigger": false
   }
 ]

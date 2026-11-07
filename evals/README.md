@@ -2,7 +2,7 @@
 
 ## Trigger evals
 
-[`trigger-evals.json`](./trigger-evals.json) lists realistic prompts with whether the skill should load (`should_trigger`). The should-not-trigger prompts are near-misses: other plotting tools (matplotlib, ggplot2, Stata, Excel), MATLAB work that is not plotting, and figure-adjacent writing or LaTeX tasks that belong to other skills.
+[`trigger-evals.json`](./trigger-evals.json) lists realistic prompts with whether the skill should load (`should_trigger`). The should-not-trigger prompts are near-misses: other plotting tools (matplotlib, ggplot2, Stata, Excel), MATLAB work that is not plotting, MATLAB plotting that is not a publication figure (App Designer interactivity and data tips, animations), and figure-adjacent writing or LaTeX tasks that belong to other skills.
 
 The file uses the `[{"query": ..., "should_trigger": ...}]` format that the skill-creator skill's trigger-eval scripts read. Re-check it whenever you change the `description` in [`SKILL.md`](../matlab-plot-skill/SKILL.md).
 
