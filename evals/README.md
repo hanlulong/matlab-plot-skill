@@ -22,6 +22,7 @@ When you change the skill or the helper, run a few real tasks end to end and che
 **New figure from data.** Prompt: "Plot the impulse responses in `irf.mat` with 68% and 90% bands for my paper."
 
 - [ ] Draws bands as shaded patches behind the lines, in the line's color.
+- [ ] Bands are visible at every horizon that has data, and the legend has no `data1` entry.
 - [ ] Passes `WidthInches` and `HeightInches` to the helper (or sets the figure size explicitly).
 - [ ] Copies `export_publication_figure.m` into the project next to the script and does not write the skill's install path (or an `addpath` to it) into the user's `.m` file.
 - [ ] Reports the PNG path it read.

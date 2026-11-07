@@ -101,6 +101,8 @@ Use the figure's own size for `Width` and `Height` (`exportgraphics` re-lays the
 - Prefer a shaded confidence band over a forest of error bars for dense series: draw a `patch`/`fill` with `FaceAlpha` ~0.15–0.2, no edge, the same hue as the mean line, *before* the line so the line sits on top.
 - Use error bars for sparse categorical data; keep cap widths modest and avoid overlapping caps.
 - Match the band or error color to the series color so the uncertainty reads as belonging to that series.
+- Check the bounds for NaN. A band drawn as one `fill` or `patch` polygon is not drawn at all if any of its bounds is NaN (no error; seen on R2026a), while the mean line only breaks at the NaN. Draw one band per contiguous run of horizons with finite bounds, and keep the NaN in the mean line so it shows a gap: deleting the NaN rows would draw the line straight across it.
+- Keep bands out of the legend: give each band `'HandleVisibility', 'off'`, or pass the line handles to `legend` (`legend(ax, [h1 h2], ...)`), so the legend lists no `data1` entry.
 
 ## Export Defaults
 

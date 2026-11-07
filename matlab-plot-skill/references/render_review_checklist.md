@@ -12,6 +12,7 @@ Use this checklist after exporting the figure. Read the actual rendered figure b
 - Are lines thick enough and markers large enough after scaling?
 - Are related series easy to distinguish in grayscale and color?
 - Is the legend easy to scan without shrinking the data region too much?
+- Is every band you drew visible, and does the legend list only real series (no `data1` entries)?
 - Are any tick labels, titles, or legends clipped?
 - Are there unnecessary repeated axis labels or repeated legends?
 - Do panel headings and subplot titles create a clear hierarchy?
